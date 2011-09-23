@@ -4,7 +4,7 @@
   <title>Bits & Bytes of Life</title>
   <link href="http://masteinhauser.github.com/atom.xml" rel="self"/>
   <link href="http://masteinhauser.github.com/"/>
-  <updated>2011-09-22T20:08:41-05:00</updated>
+  <updated>2011-09-22T20:14:46-05:00</updated>
   <id>http://masteinhauser.github.com/</id>
   <author>
     <name>Myles A. K. Steinhauser</name>
@@ -17,14 +17,16 @@
     <link href="http://masteinhauser.github.com/blog/2011/09/22/hello-world/"/>
     <updated>2011-09-22T19:50:00-05:00</updated>
     <id>http://masteinhauser.github.com/blog/2011/09/22/hello-world</id>
-    <content type="html">&lt;h1&gt;Hello World!&lt;/h1&gt;
+    <content type="html">&lt;h3&gt;Hello World: New Blog System&lt;/h3&gt;
 
 &lt;p&gt;This is my new Blog and foray into Markdown. I&amp;#8217;ve heard a lot of good things about it, lets see how it works for me.
 If you haven&amp;#8217;t heard of &lt;a href=&quot;http://octopress.org/&quot;&gt;Octopress&lt;/a&gt; or &lt;a href=&quot;http://daringfireball.net/projects/markdown/basics&quot;&gt;Markdown&lt;/a&gt; I highly recommend them.&lt;/p&gt;
 
-&lt;p&gt;But, with anything new, we don&amp;#8217;t know how it goes until we try!
-So, here goes&amp;#8230;
--Myles&lt;/p&gt;
+&lt;p&gt;But, with anything new, we don&amp;#8217;t know how it goes until we try!&lt;/p&gt;
+
+&lt;p&gt;So, here goes&amp;#8230;&lt;/p&gt;
+
+&lt;p&gt;-Myles&lt;/p&gt;
 </content>
   </entry>
   

@@ -4,7 +4,7 @@
 
 url: http://masteinhauser.github.com
 title: Bits & Bytes of Life
-subtitle: A blog of my thoughts and actions in my time.
+subtitle: A blog of my thoughts and actions.
 author: Myles A. K. Steinhauser
 simple_search: http://google.com/search
 
@@ -75,8 +75,8 @@ delicious_user:
 delicious_count: 3
 
 # Disqus Comments
-disqus_short_name:
-disqus_show_comment_count: false
+disqus_short_name: masteinhauserblog
+disqus_show_comment_count: true
 
 # Google Analytics
 google_analytics_tracking_id: UA-25897542-1

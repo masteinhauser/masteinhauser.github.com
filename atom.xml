@@ -4,13 +4,1371 @@
   <title>Bits & Bytes of Life</title>
   <link href="http://masteinhauser.github.com/atom.xml" rel="self"/>
   <link href="http://masteinhauser.github.com/"/>
-  <updated>2011-09-22T20:56:15-05:00</updated>
+  <updated>2011-09-24T19:48:28-05:00</updated>
   <id>http://masteinhauser.github.com/</id>
   <author>
     <name>Myles A. K. Steinhauser</name>
     
   </author>
 
+  
+  <entry>
+    <title>Install Pacemaker + pgPool-II 3.1</title>
+    <link href="http://masteinhauser.github.com/blog/2011/09/24/pacemaker-pgpool2/"/>
+    <updated>2011-09-24T14:00:00-05:00</updated>
+    <id>http://masteinhauser.github.com/blog/2011/09/24/pacemaker-pgpool2</id>
+    <content type="html">&lt;h3&gt;How To: Install Pacemaker + PgPool-II 3.1 on CentOS 5.7&lt;/h3&gt;
+
+&lt;p&gt;This is the second post on the clustering system I have been a part of designing and implementing. In this post I will be walking through how to build a highly available instance of pgPool-II 3.1. If you don&amp;#8217;t know what pgPool-II is, it is a load balancing, connection pooling and database replication system for PostgreSQL. We use it for when Bad Things Happen and we don&amp;#8217;t want customers to notice. Currently, this guide won&amp;#8217;t walk you through installing pgPool-II, but it will walk you through making a current install clustered and highly available.&lt;/p&gt;
+
+&lt;!&#8211;more&#8211;&gt;
+
+
+&lt;p&gt;Refer back to my previous guide of &lt;a href=&quot;http://masteinhauser.github.com/2011/09/24/corosync-pacemaker-apache2/&quot;&gt;How To Install CoroSync with Pacemaker and Apache 2&lt;/a&gt; for the initial steps to create the cluster.
+Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-en.html#install&quot;&gt;Installing pgPool-II on CentOS&lt;/a&gt; for steps on how to install and configure pgPool-II.&lt;/p&gt;
+
+&lt;p&gt;Download and save this into &lt;code&gt;/usr/lib/ocf/resource.d/heartbeat/pgpool2&lt;/code&gt;&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;Save this into /usr/lib/ocf/resource.d/heartbeat/  (pgpool2)&lt;/span&gt; &lt;a href=&#8217;http://masteinhauser.github.com/downloads/code/pgpool2&#8217;&gt;download&lt;/a&gt;&lt;/figcaption&gt;
+ &lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;15&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;16&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;17&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;18&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;19&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;20&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;21&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;22&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;23&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;24&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;25&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;26&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;27&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;28&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;29&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;30&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;31&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;32&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;33&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;34&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;35&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;36&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;37&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;38&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;39&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;40&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;41&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;42&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;43&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;44&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;45&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;46&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;47&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;48&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;49&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;50&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;51&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;52&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;53&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;54&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;55&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;56&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;57&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;58&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;59&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;60&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;61&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;62&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;63&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;64&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;65&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;66&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;67&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;68&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;69&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;70&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;71&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;72&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;73&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;74&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;75&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;76&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;77&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;78&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;79&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;80&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;81&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;82&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;83&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;84&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;85&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;86&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;87&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;88&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;89&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;90&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;91&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;92&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;93&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;94&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;95&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;96&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;97&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;98&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;99&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;100&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;101&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;102&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;103&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;104&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;105&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;106&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;107&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;108&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;109&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;110&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;111&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;112&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;113&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;114&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;115&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;116&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;117&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;118&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;119&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;120&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;121&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;122&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;123&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;124&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;125&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;126&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;127&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;128&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;129&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;130&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;131&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;132&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;133&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;134&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;135&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;136&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;137&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;138&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;139&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;140&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;141&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;142&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;143&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;144&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;145&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;146&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;147&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;148&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;149&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;150&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;151&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;152&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;153&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;154&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;155&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;156&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;157&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;158&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;159&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;160&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;161&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;162&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;163&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;164&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;165&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;166&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;167&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;168&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;169&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;170&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;171&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;172&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;173&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;174&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;175&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;176&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;177&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;178&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;179&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;180&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;181&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;182&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;183&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;184&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;185&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;186&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;187&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;188&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;189&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;190&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;191&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;192&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;193&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;194&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;195&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;196&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;197&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;198&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;199&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;200&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;201&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;202&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;203&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;204&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;205&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;206&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;207&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;208&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;209&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;210&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;211&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;212&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;213&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;214&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;215&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;216&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;217&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;218&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;219&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;220&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;221&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;222&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;223&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;224&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;225&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;226&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;227&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;228&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;229&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;230&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;231&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;232&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;233&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;234&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;235&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;236&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;237&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;238&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;239&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;240&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;241&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;242&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;243&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;244&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;245&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;246&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;247&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;248&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;249&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;250&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;251&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;252&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;253&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;254&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;255&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;256&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;257&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;258&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;259&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;260&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;261&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;262&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;263&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;264&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;265&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;266&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;267&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;268&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;269&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;270&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;271&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;272&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;273&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;274&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;275&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;276&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;277&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;278&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;279&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;280&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;281&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;282&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;283&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;284&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;285&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;286&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;287&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;288&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;289&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;290&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;291&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;292&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;293&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;294&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;295&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;296&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;297&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;298&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;299&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;300&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;301&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;302&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;303&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;304&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;305&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;306&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;307&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;308&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;309&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;310&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;311&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;312&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;313&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;314&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;315&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;316&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;317&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;318&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;319&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;320&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;321&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;322&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;323&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;324&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;325&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;326&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;327&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;328&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;329&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;330&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;331&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;332&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;333&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;334&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;335&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;336&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;337&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;338&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;339&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;340&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;341&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;342&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;343&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;344&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;345&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;346&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;347&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;348&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;349&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;350&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;351&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;352&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;353&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;354&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;355&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;356&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;357&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;358&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;359&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;360&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;361&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;362&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;363&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;364&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;365&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;366&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;367&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;368&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;369&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;370&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;371&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;372&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;373&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;374&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;375&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;376&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;377&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;378&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;379&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;380&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;381&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;382&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;383&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;384&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;385&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;386&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;387&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;388&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;389&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;390&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;391&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;392&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;393&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;394&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;395&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;396&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;397&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;398&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;399&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;400&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;401&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;402&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;403&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;404&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;405&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;406&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;407&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;408&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;409&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;410&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;411&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;412&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;413&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;414&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;415&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;416&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;417&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;418&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;419&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;420&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;421&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;422&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;423&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;424&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;425&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;426&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;427&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;428&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;429&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;430&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;431&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;432&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;433&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;434&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;435&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;436&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;437&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;438&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;439&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;440&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;441&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;442&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;443&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;444&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/sh&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#       pgpool-II resource agent.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# This program is free software; you can redistribute it and/or modify&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# it under the terms of version 2 of the GNU General Public License as&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# published by the Free Software Foundation.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# This program is distributed in the hope that it would be useful, but&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# WITHOUT ANY WARRANTY; without even the implied warranty of&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Further, this software is distributed without any warranty that it is&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# free of the rightful claim of any third person regarding infringement&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# or the like.  Any license provided herein, whether implied or&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# otherwise, applies only to this software file.  Patent licenses, if&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# any, provided herein do not apply to combinations of this program with&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# other software, or any other product whatsoever.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# You should have received a copy of the GNU General Public License&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# along with this program; if not, write the Free Software Foundation,&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#######################################################################&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# This resource agent was written by Eliot Gable &amp;lt;egable at gmail.com&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#######################################################################&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#######################################################################&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Initialization:&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;: &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_FUNCTIONS_DIR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_ROOT&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;/resource.d/heartbeat&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;. &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_FUNCTIONS_DIR&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;/.ocf-shellfuncs
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#######################################################################&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;meta_data&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        cat &lt;span class=&quot;s&quot;&gt;&amp;lt;&amp;lt;END&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;?xml version=&amp;quot;1.0&amp;quot;?&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;!DOCTYPE resource-agent SYSTEM &amp;quot;ra-api-1.dtd&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;resource-agent name=&amp;quot;pgpool2&amp;quot; version=&amp;quot;0.1&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;version&amp;gt;1.0&amp;lt;/version&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;This resource agent provides basic management of pgpool-II.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;It starts and stops pgpool-II and monitors its status. It will&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;also monitor the status of each connection and can optionally&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;attempt to automatically reconnect detached nodes or can&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;mark the service as failed if there are any detached nodes.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Manages pgpool-II&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameters&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;pcp_admin_username&amp;quot; required=&amp;quot;1&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Administrative username for pgpool-II control.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Administrative username.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;pcp_admin_password&amp;quot; required=&amp;quot;1&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Administrative password for pgpool-II control.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Administrative password.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;pcp_admin_port&amp;quot; required=&amp;quot;1&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Administrative port for pgpool-II control.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Administrative port for PCP commands.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;pcp_admin_host&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Administrative host for pgpool-II control.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Administrative host for PCP commands.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;localhost&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;pgpool_bin&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Path to the pgpool-II binary.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Path to pgpool.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;/usr/bin/pgpool&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;pcp_attach_node_bin&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Path to the pcp_attach_node binary.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Path to pcp_attach_node.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;/usr/bin/pcp_attach_node&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;pcp_detach_node_bin&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Path to the pcp_detach_node binary.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Path to pcp_detach_node.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;/usr/bin/pcp_detach_node&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;pcp_node_count_bin&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Path to the pcp_node_count binary.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Path to pcp_node_count.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;/usr/bin/pcp_node_count&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;pcp_node_info_bin&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Path to the pcp_node_info binary.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Path to pcp_node_info.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;/usr/bin/pcp_node_info&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;stop_mode&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Stop mode to use when stopping pgpool-II.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Stop mode for pgpool-II.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;f&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;auto_reconnect&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;If &amp;quot;true&amp;quot;, then during monitoring actions,&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;the resource agent will attempt to re-attach any disconnected&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;nodes. No error will be reported if re-attachment fails.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Automatically reattach failed nodes&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;boolean&amp;quot; default=&amp;quot;&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;fail_on_detached&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;This instructs the resource agent to mark pgpool-II in a&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;failed state if one or more of the nodes is detached. The monitor&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;action will always mark pgpool-II in a failed state if all nodes are&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;detached, so this is only useful if you want to mark pgpool-II in a&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;failed state if at least one node is detached. The auto_reconnect&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;option will always try to reconnect detached nodes (if enabled)&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;before this fail_on_detached mechanism triggers.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Marks resource as failed if at least one node is detached.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;parameter name=&amp;quot;fail_on_node_detached&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;longdesc lang=&amp;quot;en&amp;quot;&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;This is similar to fail_on_detached, except you can&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;specify a comma-seperated list of node IDs. If specified, pgpool2&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;will only be marked as &amp;quot;failed&amp;quot; if one of the nodes in the list&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;is detached or if all nodes are detached.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/longdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;shortdesc lang=&amp;quot;en&amp;quot;&amp;gt;Specify a list of nodes to monitor for failure.&amp;lt;/shortdesc&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;content type=&amp;quot;string&amp;quot; default=&amp;quot;&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameter&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/parameters&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;actions&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;action name=&amp;quot;start&amp;quot;        timeout=&amp;quot;20&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;action name=&amp;quot;stop&amp;quot;         timeout=&amp;quot;40&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;action name=&amp;quot;monitor&amp;quot;     timeout=&amp;quot;20&amp;quot; interval=&amp;quot;5&amp;quot; depth=&amp;quot;0&amp;quot;/&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;action name=&amp;quot;reload&amp;quot;       timeout=&amp;quot;20&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;action name=&amp;quot;meta-data&amp;quot;  timeout=&amp;quot;5&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;action name=&amp;quot;validate-all&amp;quot;  timeout=&amp;quot;20&amp;quot; /&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/actions&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/resource-agent&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;END&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#######################################################################&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;pgpool2_usage&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        cat &lt;span class=&quot;s&quot;&gt;&amp;lt;&amp;lt;END&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;usage: $0 {start|stop|status|monitor|validate-all|meta-data}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;Expects to have a fully populated OCF RA-compliant environment set.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;END&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;pgpool2_start&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;pgpool2_status; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log debug &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : already started.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PGPOOL&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;sleep 2
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;pgpool2_status; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Successfully started pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Failed to start pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_GENERIC&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Failed to start pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_GENERIC&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;pgpool2_stop&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;case &lt;/span&gt;pgpool2_status in
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;Using $PGPOOL -m $STOP_MODE stop to stop pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PGPOOL&lt;/span&gt; -m &lt;span class=&quot;nv&quot;&gt;$STOP_MODE&lt;/span&gt; stop; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Successfully stopped pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Failed to stop pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            ;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;nv&quot;&gt;$OCF_NOT_RUNNING&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            ocf_log debug &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : already stopped.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            ;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_GENERIC&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;pgpool2_status&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; ! -r &lt;span class=&quot;s2&quot;&gt;&amp;quot;/var/run/pgpool/pgpool.pid&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_NOT_RUNNING&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ps_info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;ps ax | grep &lt;span class=&quot;s2&quot;&gt;&amp;quot;[p]gpool[^:]&amp;quot;&lt;/span&gt; | grep &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;cat /var/run/pgpool/pgpool.pid&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${ps_info}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_NOT_RUNNING&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;c&quot;&gt;# Try to reconnect any detached nodes&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;is_ocf_true &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_RESKEY_auto_reconnect&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; ; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;NODE_COUNT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PCP_NODE_COUNT&lt;/span&gt; 1 &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_host&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_port&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_username&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_password&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;node in &lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;seq 0 &lt;span class=&quot;k&quot;&gt;$((&lt;/span&gt;NODE_COUNT-1&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;NODE_INFO&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PCP_NODE_INFO&lt;/span&gt; 1 &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_host&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_port&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_username&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_password&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt; | awk &lt;span class=&quot;s1&quot;&gt;&amp;#39;{print $3}&amp;#39;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$NODE_INFO&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;3&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                    &lt;/span&gt;ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;Node $node is currently detached. Attempting to reattach the node.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                    &lt;span class=&quot;nv&quot;&gt;$PCP_ATTACH_NODE&lt;/span&gt; 1 &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_host&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_port&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_username&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_password&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                    &lt;span class=&quot;nv&quot;&gt;ATTACHED&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;1&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            done&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${ATTACHED}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;sleep 1
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;c&quot;&gt;# Fail if configured to fail on one or more detached nodes and a node is still detached&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;is_ocf_true &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_RESKEY_fail_on_detached&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; ; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;NODE_COUNT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PCP_NODE_COUNT&lt;/span&gt; 1 &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_host&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_port&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_username&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_password&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;node in &lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;seq 0 &lt;span class=&quot;k&quot;&gt;$((&lt;/span&gt;NODE_COUNT-1&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;NODE_INFO&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PCP_NODE_INFO&lt;/span&gt; 1 &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_host&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_port&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_username&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_password&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt; | awk &lt;span class=&quot;s1&quot;&gt;&amp;#39;{print $3}&amp;#39;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$NODE_INFO&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;3&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                    &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Node $node is detached. The pgpool-II service has failed.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_GENERIC&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            done&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;c&quot;&gt;# Fail if one of the specifically configured nodes is detached at this point&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_fail_on_node_detached}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;NODE_COUNT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PCP_NODE_COUNT&lt;/span&gt; 1 &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_host&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_port&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_username&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_password&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;node in &lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;seq 0 &lt;span class=&quot;k&quot;&gt;$((&lt;/span&gt;NODE_COUNT-1&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;sb&quot;&gt;`&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;NODE_INFO&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PCP_NODE_INFO&lt;/span&gt; 1 &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_host&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_port&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_username&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_password&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt; | awk &lt;span class=&quot;s1&quot;&gt;&amp;#39;{print $3}&amp;#39;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$NODE_INFO&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;3&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_RESKEY_fail_on_node_detached&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;%%,*&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                    &lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_RESKEY_fail_on_node_detached&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;#*,&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                    &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;$TOKEN&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN_STRING}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                        if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$TOKEN&amp;quot;&lt;/span&gt; -eq &lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                            &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Node $node is detached. The pgpool-II service has failed.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_GENERIC&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                        &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;%%,*&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN_STRING}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN_STRING#*,}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                            &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                        &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                            &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;#*,&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                    done&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            done&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Service is running and there is no reason to fail&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;pgpool2_validate&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# If we&amp;#39;re running as a clone, are the clone meta attrs OK?&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#    if [ &amp;quot;${OCF_RESKEY_CRM_meta_clone}&amp;quot; ]; then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#       if [ &amp;quot;${OCF_RESKEY_CRM_meta_clone_node_max}&amp;quot; != 1 ]; then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#           ocf_log error &amp;quot;Misconfigured clone parameters. Must set meta attribute \&amp;quot;clone_node_max\&amp;quot; to 1, got ${OCF_RESKEY_CRM_meta_clone_node_max}.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#           return $OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#       fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#    fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_admin_username}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_admin_username\&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_admin_password}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_admin_password\&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_admin_host}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_admin_host\&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_admin_port}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_admin_port\&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pgpool binary?&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pgpool_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pgpool_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -x &lt;span class=&quot;s2&quot;&gt;&amp;quot;$PGPOOL&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;The pgpool binary is not executable or is not installed.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_INSTALLED&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pcp_attach_node binary?&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_attach_node_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_attach_node_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -x &lt;span class=&quot;s2&quot;&gt;&amp;quot;$PCP_ATTACH_NODE&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;The pcp_attach_node binary is not executable or is not installed.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_INSTALLED&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pcp_detach_node binary?&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_detach_node_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_detach_node_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -x &lt;span class=&quot;s2&quot;&gt;&amp;quot;$PCP_DETACH_NODE&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;The pcp_detach_node binary is not executable or is not installed.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_INSTALLED&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pcp_node_count binary?&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_node_count_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_node_count_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -x &lt;span class=&quot;s2&quot;&gt;&amp;quot;$PCP_NODE_COUNT&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;The pcp_node_count binary is not executable or is not installed.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_INSTALLED&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pcp_node_info binary?&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_node_info_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_node_info_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -x &lt;span class=&quot;s2&quot;&gt;&amp;quot;$PCP_NODE_INFO&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;The pcp_node_info binary is not executable or is not installed.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_INSTALLED&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_stop_mode}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_stop_mode&amp;quot;&lt;/span&gt; | grep -E &lt;span class=&quot;s1&quot;&gt;&amp;#39;[fsi]|fast|start|immediate&amp;#39;&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then &lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Stop mode is invalid.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Stop mode was not specified.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_auto_reconnect}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_auto_reconnect}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_auto_reconnect}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;false&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Parameter &amp;#39;auto_reconnect&amp;#39; must be empty, &amp;#39;true&amp;#39;, or &amp;#39;false&amp;#39;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_fail_on_detached}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_fail_on_detached}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_fail_on_detached}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;false&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Parameter &amp;#39;fail_on_detached&amp;#39; must be empty, &amp;#39;true&amp;#39;, or &amp;#39;false&amp;#39;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;shopt&lt;/span&gt; -s extglob
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_fail_on_node_detached}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_RESKEY_fail_on_node_detached&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;%%,*&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_RESKEY_fail_on_node_detached&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;#*,&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;nv&quot;&gt;$TOKEN&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN_STRING}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            case&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$TOKEN&lt;/span&gt; in
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;^0-9&lt;span class=&quot;o&quot;&gt;])&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                    ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Invalid token &amp;#39;${TOKEN}&amp;#39; in parameter &amp;#39;fail_on_node_detached&amp;#39;.&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                ;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;%%,*&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN_STRING}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN_STRING#*,}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;#*,&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        done&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# These two actions must always succeed&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$__OCF_ACTION&lt;/span&gt; in
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;meta-data&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;      meta_data
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;c&quot;&gt;# OCF variables are not set when querying meta-data&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;nb&quot;&gt;exit &lt;/span&gt;0
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                ;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;usage|help&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;     pgpool2_usage
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                ;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;pgpool2_validate &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$?&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;PGPOOL&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pgpool_bin&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;PCP_ATTACH_NODE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_attach_node_bin&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;PCP_DETACH_NODE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_detach_node_bin&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;PCP_NODE_COUNT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_node_count_bin&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;PCP_NODE_INFO&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_node_info_bin&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;STOP_MODE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_stop_mode&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$__OCF_ACTION&lt;/span&gt; in
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;start&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;          pgpool2_start;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;stop&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;           pgpool2_stop;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;status|monitor&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; pgpool2_status;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;validate-all&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;   ;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;*&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;              pgpool2_usage
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_UNIMPLEMENTED&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                ;;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;rc&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$?&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;ocf_log debug &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} $__OCF_ACTION returned $rc&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;exit&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$rc&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Update the configuration so pgPool-II is clustered
+&lt;strong&gt;Change the parameters below to match your environment!&lt;/strong&gt;&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;15&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;16&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure primitive pgPool ocf:heartbeat:pgpool2 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;pcp_admin_username&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;postgres &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;pcp_admin_password&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;postgres &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;pcp_admin_port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;9898 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;pcp_admin_host&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;localhost &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;pgpool_bin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/sbin/pgpool &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;pcp_attach_node_bin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/bin/pcp_attach_node &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;pcp_detach_node_bin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/bin/pcp_detach_node &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;pcp_node_count_bin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/bin/pcp_node_count &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;pcp_node_info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/bin/pcp_node_info &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;stop_mode&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;f &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;auto_reconnect&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;t &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;op monitor &lt;span class=&quot;nv&quot;&gt;interval&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1min
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure show
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm status
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Configure Pacemaker to keep multiple resources together. In this case, pgPool-II can only run on the system with the ClusterIP.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure colocation pgpool-with-ip INFINITY: pgPool ClusterIP
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure show
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm_mon
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Configure Pacemaker to start the ClusterIP before pgPool and stop it after pgPool is stopped.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure order pgPool-after-ip mandatory: ClusterIP pgPool
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure show
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;After waiting a few moments CoroSync should start up pgPool on one of the nodes.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm_mon
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h3&gt;References:&lt;/h3&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-en.html#install&quot;&gt;Installing pgPool-II on CentOS&lt;/a&gt;
+ClusterLabs &lt;a href=&quot;http://www.clusterlabs.org/doc/Cluster_from_Scratch.pdf&quot;&gt;Cluster From Scratch&lt;/a&gt;&lt;/p&gt;
+</content>
+  </entry>
+  
+  <entry>
+    <title>Install CoroSync + Pacemaker on CentOS 5.6</title>
+    <link href="http://masteinhauser.github.com/blog/2011/09/24/corosync-pacemaker-apache2/"/>
+    <updated>2011-09-24T10:00:00-05:00</updated>
+    <id>http://masteinhauser.github.com/blog/2011/09/24/corosync-pacemaker-apache2</id>
+    <content type="html">&lt;h3&gt;How To: Install CoroSync + Pacemaker on CentOS 5.6&lt;/h3&gt;
+
+&lt;p&gt;In this post we will be setting up CoroSync and Pacemaker on CentOS to create an easily managed cluster for different resources. There are many options available to create a cluster, Hearbeat being one of the oldest, but the development team I am a part of have settled on this combination as it is the most likely to receive security and feature updates as clustering systems change. It also takes advantage of some of the items that Heartbeat does a good job of managing currently while adding far easier management and scalability that wasn&amp;#8217;t possible with only Heartbeat 2.&lt;/p&gt;
+
+&lt;!&#8211;more&#8211;&gt;
+
+
+&lt;p&gt;Install EPEL repository for packages that don&amp;#8217;t exist in vanilla Redhat/CentOS.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;su -
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;uname -i&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;/epel-release-5-4.noarch.rpm
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt; bash&lt;/p&gt;
+
+&lt;p&gt;Add Cluster Labs repo for Pacemaker&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;wget -O /etc/yum.repos.d/pacemaker.repo http://clusterlabs.org/rpm/epel-5/clusterlabs.repo
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Install Pacemaker 1.0+ and CoroSync 1.2+&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;yum install -y pacemaker.&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;uname -i&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt; corosync.&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;uname -i&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h4&gt;Configure CoroSync&lt;/h4&gt;
+
+&lt;p&gt;Create /etc/corosync/authkey for authentication within cluster communication. This file MUST be copied to each node in the cluster.
+If  a message &amp;#8220;Invalid digest&amp;#8221; appears from the corosync executive, the keys are not consistent between processors.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Generate Key&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;corosync-keygen
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Define receiving server and copy to it.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;172.25.3.26
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;cat /etc/corosync/authkey | ssh root@&lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;cat &amp;gt;&amp;gt; /etc/corosync/authkey; chmod 0400 /etc/corosync/authkey; chown hacluster:hacluster /etc/corosync/authkey&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Open the example CoroSync configuration:
+- Change the &lt;code&gt;bindnetaddr&lt;/code&gt; to the IP for each server.
+- Change &lt;code&gt;mcastaddr&lt;/code&gt; and &lt;code&gt;mcastport&lt;/code&gt; to be unique for each cluster.
+- Change &lt;code&gt;secauth&lt;/code&gt; to &lt;code&gt;on&lt;/code&gt; if encryption is desired or on an insecure network.
+The defaults beyond those changes are usually acceptable.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;cp /etc/corosync/corosync.conf.example /etc/corosync/corosync.conf
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;vim /etc/corosync/corosync.conf
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Add in section to tell CoroSync to run as root for resource management. If not clustering resources, leave this out!&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;aisexec &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;c&quot;&gt;# Run as root - this is necessary to be able to manage resources with Pacemaker&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        user:        root
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        group:       root
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Add in values to start PaceMaker&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;7&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;cat &lt;span class=&quot;s&quot;&gt;&amp;lt;&amp;lt;-END &amp;gt;&amp;gt;/etc/corosync/corosync.conf&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;service {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    # Load the Pacemaker Cluster Resource Manager&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    name: pacemaker&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    ver: 0&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;END&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Once familiarized with the simple structure of it, read the man page.
+It will explain the up-to-date options and what everything means.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;man corosync.conf.5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Copy the configuration to each node in the cluster&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Define receiving server and copy to it.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;172.25.3.26
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;scp /etc/corosync/corosync.conf root@&lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt;:/etc/corosync/corosync.conf
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;One last thing, as of this writing the RPM packages don&amp;#8217;t create the necessary folders for the default log file.
+Create them now on all nodes.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;mkdir /var/log/cluster/
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;172.25.3.26
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;ssh root@&lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;mkdir /var/log/cluster/&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Now, start up CoroSync on the first node.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;service corosync start
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Check to see CoroSync is running as expected&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm_mon
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Or for a single chunk of info:&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm status
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Since the dark ages of Pacemaker, many changes and advances have been implemented.
+Take a look at Cluster from Scratch and page #27 and on. It explains everything very well.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm &#8211;help
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;With one node active and functional it is safe to start the second node.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;172.25.3.26
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;ssh root@&lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt; &#8211; service corosync start
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h4&gt;Configure an Active/Passive Cluster [Cluster From Scratch, page 28 and on]&lt;/h4&gt;
+
+&lt;p&gt;Before we continue we should check if the configuration is correct&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm_verify -L
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;As you can see, the tool has found a few errors.&lt;/p&gt;
+
+&lt;p&gt;This is due to Pacemaker&amp;#8217;s use of STONITH. We will configure this later but will disable it for now:&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure property stonith-enabled&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm_verify -L
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;The configuration is now valid.&lt;/p&gt;
+
+&lt;h4&gt;Adding a resource: ClusterIP [Cluster From Scratch, page 32]&lt;/h4&gt;
+
+&lt;p&gt;The first thing we need to do for a cluster is add a resource like an IP address so we can always contact and communicate with the cluster without regardless of where the cluster services are running.
+&lt;strong&gt;This must be a NEW address not associated with ANY node.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure primitive ClusterIP ocf:heartbeat:IPaddr2 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;ip&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;172.25.3.20 &lt;span class=&quot;nv&quot;&gt;cidr_netmask&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;21 &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;op monitor &lt;span class=&quot;nv&quot;&gt;interval&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;30s
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Verify that the IP address has been added to the configuration.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure show
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm status
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;We also want to disable autofailback as our machines are generally identical so there is no reason to failback to a specific node.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure rsc_defaults resource-stickiness&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;100
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure show
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Since we normally use a 2 node cluster which is mathematically unable to attain quorum, we need to tell Pacemaker to ignore it.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure property no-quorum-policy&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;ignore
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure show
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Now, if a node goes down the resources will be transitioned appropriately instead of the cluster failing.&lt;/p&gt;
+
+&lt;h4&gt;Adding a resource: Apache2 [Cluster From Scratch, page 38]&lt;/h4&gt;
+
+&lt;p&gt;Install the Apache 2 webserver and &lt;code&gt;wget&lt;/code&gt; for the cluster to check the status of apache.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;yum install -y httpd wget
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Let&amp;#8217;s create a default index page for Apache to show what server is currently processing requests.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;8&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Load the HOSTNAME into our session.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;source&lt;/span&gt; /etc/sysconfig/network
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;cat &lt;span class=&quot;s&quot;&gt;&amp;lt;&amp;lt;-END &amp;gt;/var/www/html/index.html&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;html&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    &amp;lt;body&amp;gt;The Apache cluster is on: $HOSTNAME&amp;lt;/body&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;&amp;lt;/html&amp;gt;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;END&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Update Apache configuration to allow /server-status which is what Pacemaker uses to check if Apache is alive.
+- Uncomment &lt;code&gt;ExtendedStatus on&lt;/code&gt;
+- Uncomment &lt;code&gt;&amp;lt;/Location /server-status&amp;gt;&lt;/code&gt;
+- Update &lt;code&gt;All from .example.com&lt;/code&gt; to &lt;code&gt;Allow from 172.25&lt;/code&gt;&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;vim /etc/httpd/conf/httpd.conf
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Update the configuration so Apache is clustered&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure primitive WebSite ocf:heartbeat:apache &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;params &lt;span class=&quot;nv&quot;&gt;configfile&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/etc/httpd/conf/httpd.conf &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;op monitor &lt;span class=&quot;nv&quot;&gt;interval&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1min
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure show
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm status
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Configure Pacemaker to keep multiple resources together. In this case, Apache can only run on the system with the ClusterIP.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure colocation website-with-ip INFINITY: WebSite ClusterIP
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure show
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm_mon
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;Configure Pacemaker to start the ClusterIP before WebSite and stop it after WebSite is stopped.&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure order apache-after-ip mandatory: ClusterIP WebSite
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm configure show
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;p&gt;We&amp;#8217;re done! You now have a fully clustered dual or multi node cluster.
+Some helpful commands are:&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;15&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;16&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;17&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;18&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;19&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;20&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;21&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# These first 3 are self explanatory:&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm resource start WebSite
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm resource stop WebSite
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm resource restart WebSite
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# This allows you to specificy which node in the cluster this resource should be running on.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm resource move WebSite node2
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# After moving, give control back to the cluster&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm resource unmove WebSite
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Set the local node into `standby` which moves all resource off of it allowing for maintenance.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm node standby
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# The same for a remote node&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm node standby node2
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Bring the local or remote node back online after maintenance&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm node online
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm node online node2
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Remove a node from the cluster&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;crm node delete localhost.localdomain
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h3&gt;References:&lt;/h3&gt;
+
+&lt;p&gt;ClusterLabs &lt;a href=&quot;http://www.clusterlabs.org/doc/Cluster_from_Scratch.pdf&quot;&gt;Cluster From Scratch&lt;/a&gt;&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;man corosync.conf
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;man corosync_overview
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+
+</content>
+  </entry>
   
   <entry>
     <title>Hello World</title>

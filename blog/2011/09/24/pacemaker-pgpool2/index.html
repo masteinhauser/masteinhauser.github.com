@@ -1,0 +1,1252 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Install Pacemaker + pgPool-II 3.1 - Bits & Bytes of Life</title>
+  <meta name="author" content="Myles A. K. Steinhauser">
+
+  
+  <meta name="description" content="How To: Install Pacemaker + PgPool-II 3.1 on CentOS 5.7This is the second post on the clustering system I have been a part of designing and impleme...">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://masteinhauser.github.com/blog/2011/09/24/pacemaker-pgpool2/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="/atom.xml" rel="alternate" title="Bits & Bytes of Life" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+</head>
+
+<body  >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Bits & Bytes of Life</a></h1>
+  
+    <h2>A blog of my thoughts and actions.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:masteinhauser.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Install Pacemaker + pgPool-II 3.1</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-09-24T14:00:00-05:00" pubdate  data-updated="true" >Sep 24<span>th</span>, 2011</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h3>How To: Install Pacemaker + PgPool-II 3.1 on CentOS 5.7</h3>
+
+<p>This is the second post on the clustering system I have been a part of designing and implementing. In this post I will be walking through how to build a highly available instance of pgPool-II 3.1. If you don&#8217;t know what pgPool-II is, it is a load balancing, connection pooling and database replication system for PostgreSQL. We use it for when Bad Things Happen and we don&#8217;t want customers to notice. Currently, this guide won&#8217;t walk you through installing pgPool-II, but it will walk you through making a current install clustered and highly available.</p>
+
+<!--more-->
+
+
+<p>Refer back to my previous guide of <a href="/2011/09/24/corosync-pacemaker-apache2/">How To Install CoroSync with Pacemaker and Apache 2</a> for the initial steps to create the cluster.
+Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-en.html#install">Installing pgPool-II on CentOS</a> for steps on how to install and configure pgPool-II.</p>
+
+<p>Download and save this into <code>/usr/lib/ocf/resource.d/heartbeat/pgpool2</code></p>
+
+<figure class='code'><figcaption><span>Save this into /usr/lib/ocf/resource.d/heartbeat/  (pgpool2)</span> <a href='/downloads/code/pgpool2'>download</a></figcaption>
+ <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+<span class='line-number'>67</span>
+<span class='line-number'>68</span>
+<span class='line-number'>69</span>
+<span class='line-number'>70</span>
+<span class='line-number'>71</span>
+<span class='line-number'>72</span>
+<span class='line-number'>73</span>
+<span class='line-number'>74</span>
+<span class='line-number'>75</span>
+<span class='line-number'>76</span>
+<span class='line-number'>77</span>
+<span class='line-number'>78</span>
+<span class='line-number'>79</span>
+<span class='line-number'>80</span>
+<span class='line-number'>81</span>
+<span class='line-number'>82</span>
+<span class='line-number'>83</span>
+<span class='line-number'>84</span>
+<span class='line-number'>85</span>
+<span class='line-number'>86</span>
+<span class='line-number'>87</span>
+<span class='line-number'>88</span>
+<span class='line-number'>89</span>
+<span class='line-number'>90</span>
+<span class='line-number'>91</span>
+<span class='line-number'>92</span>
+<span class='line-number'>93</span>
+<span class='line-number'>94</span>
+<span class='line-number'>95</span>
+<span class='line-number'>96</span>
+<span class='line-number'>97</span>
+<span class='line-number'>98</span>
+<span class='line-number'>99</span>
+<span class='line-number'>100</span>
+<span class='line-number'>101</span>
+<span class='line-number'>102</span>
+<span class='line-number'>103</span>
+<span class='line-number'>104</span>
+<span class='line-number'>105</span>
+<span class='line-number'>106</span>
+<span class='line-number'>107</span>
+<span class='line-number'>108</span>
+<span class='line-number'>109</span>
+<span class='line-number'>110</span>
+<span class='line-number'>111</span>
+<span class='line-number'>112</span>
+<span class='line-number'>113</span>
+<span class='line-number'>114</span>
+<span class='line-number'>115</span>
+<span class='line-number'>116</span>
+<span class='line-number'>117</span>
+<span class='line-number'>118</span>
+<span class='line-number'>119</span>
+<span class='line-number'>120</span>
+<span class='line-number'>121</span>
+<span class='line-number'>122</span>
+<span class='line-number'>123</span>
+<span class='line-number'>124</span>
+<span class='line-number'>125</span>
+<span class='line-number'>126</span>
+<span class='line-number'>127</span>
+<span class='line-number'>128</span>
+<span class='line-number'>129</span>
+<span class='line-number'>130</span>
+<span class='line-number'>131</span>
+<span class='line-number'>132</span>
+<span class='line-number'>133</span>
+<span class='line-number'>134</span>
+<span class='line-number'>135</span>
+<span class='line-number'>136</span>
+<span class='line-number'>137</span>
+<span class='line-number'>138</span>
+<span class='line-number'>139</span>
+<span class='line-number'>140</span>
+<span class='line-number'>141</span>
+<span class='line-number'>142</span>
+<span class='line-number'>143</span>
+<span class='line-number'>144</span>
+<span class='line-number'>145</span>
+<span class='line-number'>146</span>
+<span class='line-number'>147</span>
+<span class='line-number'>148</span>
+<span class='line-number'>149</span>
+<span class='line-number'>150</span>
+<span class='line-number'>151</span>
+<span class='line-number'>152</span>
+<span class='line-number'>153</span>
+<span class='line-number'>154</span>
+<span class='line-number'>155</span>
+<span class='line-number'>156</span>
+<span class='line-number'>157</span>
+<span class='line-number'>158</span>
+<span class='line-number'>159</span>
+<span class='line-number'>160</span>
+<span class='line-number'>161</span>
+<span class='line-number'>162</span>
+<span class='line-number'>163</span>
+<span class='line-number'>164</span>
+<span class='line-number'>165</span>
+<span class='line-number'>166</span>
+<span class='line-number'>167</span>
+<span class='line-number'>168</span>
+<span class='line-number'>169</span>
+<span class='line-number'>170</span>
+<span class='line-number'>171</span>
+<span class='line-number'>172</span>
+<span class='line-number'>173</span>
+<span class='line-number'>174</span>
+<span class='line-number'>175</span>
+<span class='line-number'>176</span>
+<span class='line-number'>177</span>
+<span class='line-number'>178</span>
+<span class='line-number'>179</span>
+<span class='line-number'>180</span>
+<span class='line-number'>181</span>
+<span class='line-number'>182</span>
+<span class='line-number'>183</span>
+<span class='line-number'>184</span>
+<span class='line-number'>185</span>
+<span class='line-number'>186</span>
+<span class='line-number'>187</span>
+<span class='line-number'>188</span>
+<span class='line-number'>189</span>
+<span class='line-number'>190</span>
+<span class='line-number'>191</span>
+<span class='line-number'>192</span>
+<span class='line-number'>193</span>
+<span class='line-number'>194</span>
+<span class='line-number'>195</span>
+<span class='line-number'>196</span>
+<span class='line-number'>197</span>
+<span class='line-number'>198</span>
+<span class='line-number'>199</span>
+<span class='line-number'>200</span>
+<span class='line-number'>201</span>
+<span class='line-number'>202</span>
+<span class='line-number'>203</span>
+<span class='line-number'>204</span>
+<span class='line-number'>205</span>
+<span class='line-number'>206</span>
+<span class='line-number'>207</span>
+<span class='line-number'>208</span>
+<span class='line-number'>209</span>
+<span class='line-number'>210</span>
+<span class='line-number'>211</span>
+<span class='line-number'>212</span>
+<span class='line-number'>213</span>
+<span class='line-number'>214</span>
+<span class='line-number'>215</span>
+<span class='line-number'>216</span>
+<span class='line-number'>217</span>
+<span class='line-number'>218</span>
+<span class='line-number'>219</span>
+<span class='line-number'>220</span>
+<span class='line-number'>221</span>
+<span class='line-number'>222</span>
+<span class='line-number'>223</span>
+<span class='line-number'>224</span>
+<span class='line-number'>225</span>
+<span class='line-number'>226</span>
+<span class='line-number'>227</span>
+<span class='line-number'>228</span>
+<span class='line-number'>229</span>
+<span class='line-number'>230</span>
+<span class='line-number'>231</span>
+<span class='line-number'>232</span>
+<span class='line-number'>233</span>
+<span class='line-number'>234</span>
+<span class='line-number'>235</span>
+<span class='line-number'>236</span>
+<span class='line-number'>237</span>
+<span class='line-number'>238</span>
+<span class='line-number'>239</span>
+<span class='line-number'>240</span>
+<span class='line-number'>241</span>
+<span class='line-number'>242</span>
+<span class='line-number'>243</span>
+<span class='line-number'>244</span>
+<span class='line-number'>245</span>
+<span class='line-number'>246</span>
+<span class='line-number'>247</span>
+<span class='line-number'>248</span>
+<span class='line-number'>249</span>
+<span class='line-number'>250</span>
+<span class='line-number'>251</span>
+<span class='line-number'>252</span>
+<span class='line-number'>253</span>
+<span class='line-number'>254</span>
+<span class='line-number'>255</span>
+<span class='line-number'>256</span>
+<span class='line-number'>257</span>
+<span class='line-number'>258</span>
+<span class='line-number'>259</span>
+<span class='line-number'>260</span>
+<span class='line-number'>261</span>
+<span class='line-number'>262</span>
+<span class='line-number'>263</span>
+<span class='line-number'>264</span>
+<span class='line-number'>265</span>
+<span class='line-number'>266</span>
+<span class='line-number'>267</span>
+<span class='line-number'>268</span>
+<span class='line-number'>269</span>
+<span class='line-number'>270</span>
+<span class='line-number'>271</span>
+<span class='line-number'>272</span>
+<span class='line-number'>273</span>
+<span class='line-number'>274</span>
+<span class='line-number'>275</span>
+<span class='line-number'>276</span>
+<span class='line-number'>277</span>
+<span class='line-number'>278</span>
+<span class='line-number'>279</span>
+<span class='line-number'>280</span>
+<span class='line-number'>281</span>
+<span class='line-number'>282</span>
+<span class='line-number'>283</span>
+<span class='line-number'>284</span>
+<span class='line-number'>285</span>
+<span class='line-number'>286</span>
+<span class='line-number'>287</span>
+<span class='line-number'>288</span>
+<span class='line-number'>289</span>
+<span class='line-number'>290</span>
+<span class='line-number'>291</span>
+<span class='line-number'>292</span>
+<span class='line-number'>293</span>
+<span class='line-number'>294</span>
+<span class='line-number'>295</span>
+<span class='line-number'>296</span>
+<span class='line-number'>297</span>
+<span class='line-number'>298</span>
+<span class='line-number'>299</span>
+<span class='line-number'>300</span>
+<span class='line-number'>301</span>
+<span class='line-number'>302</span>
+<span class='line-number'>303</span>
+<span class='line-number'>304</span>
+<span class='line-number'>305</span>
+<span class='line-number'>306</span>
+<span class='line-number'>307</span>
+<span class='line-number'>308</span>
+<span class='line-number'>309</span>
+<span class='line-number'>310</span>
+<span class='line-number'>311</span>
+<span class='line-number'>312</span>
+<span class='line-number'>313</span>
+<span class='line-number'>314</span>
+<span class='line-number'>315</span>
+<span class='line-number'>316</span>
+<span class='line-number'>317</span>
+<span class='line-number'>318</span>
+<span class='line-number'>319</span>
+<span class='line-number'>320</span>
+<span class='line-number'>321</span>
+<span class='line-number'>322</span>
+<span class='line-number'>323</span>
+<span class='line-number'>324</span>
+<span class='line-number'>325</span>
+<span class='line-number'>326</span>
+<span class='line-number'>327</span>
+<span class='line-number'>328</span>
+<span class='line-number'>329</span>
+<span class='line-number'>330</span>
+<span class='line-number'>331</span>
+<span class='line-number'>332</span>
+<span class='line-number'>333</span>
+<span class='line-number'>334</span>
+<span class='line-number'>335</span>
+<span class='line-number'>336</span>
+<span class='line-number'>337</span>
+<span class='line-number'>338</span>
+<span class='line-number'>339</span>
+<span class='line-number'>340</span>
+<span class='line-number'>341</span>
+<span class='line-number'>342</span>
+<span class='line-number'>343</span>
+<span class='line-number'>344</span>
+<span class='line-number'>345</span>
+<span class='line-number'>346</span>
+<span class='line-number'>347</span>
+<span class='line-number'>348</span>
+<span class='line-number'>349</span>
+<span class='line-number'>350</span>
+<span class='line-number'>351</span>
+<span class='line-number'>352</span>
+<span class='line-number'>353</span>
+<span class='line-number'>354</span>
+<span class='line-number'>355</span>
+<span class='line-number'>356</span>
+<span class='line-number'>357</span>
+<span class='line-number'>358</span>
+<span class='line-number'>359</span>
+<span class='line-number'>360</span>
+<span class='line-number'>361</span>
+<span class='line-number'>362</span>
+<span class='line-number'>363</span>
+<span class='line-number'>364</span>
+<span class='line-number'>365</span>
+<span class='line-number'>366</span>
+<span class='line-number'>367</span>
+<span class='line-number'>368</span>
+<span class='line-number'>369</span>
+<span class='line-number'>370</span>
+<span class='line-number'>371</span>
+<span class='line-number'>372</span>
+<span class='line-number'>373</span>
+<span class='line-number'>374</span>
+<span class='line-number'>375</span>
+<span class='line-number'>376</span>
+<span class='line-number'>377</span>
+<span class='line-number'>378</span>
+<span class='line-number'>379</span>
+<span class='line-number'>380</span>
+<span class='line-number'>381</span>
+<span class='line-number'>382</span>
+<span class='line-number'>383</span>
+<span class='line-number'>384</span>
+<span class='line-number'>385</span>
+<span class='line-number'>386</span>
+<span class='line-number'>387</span>
+<span class='line-number'>388</span>
+<span class='line-number'>389</span>
+<span class='line-number'>390</span>
+<span class='line-number'>391</span>
+<span class='line-number'>392</span>
+<span class='line-number'>393</span>
+<span class='line-number'>394</span>
+<span class='line-number'>395</span>
+<span class='line-number'>396</span>
+<span class='line-number'>397</span>
+<span class='line-number'>398</span>
+<span class='line-number'>399</span>
+<span class='line-number'>400</span>
+<span class='line-number'>401</span>
+<span class='line-number'>402</span>
+<span class='line-number'>403</span>
+<span class='line-number'>404</span>
+<span class='line-number'>405</span>
+<span class='line-number'>406</span>
+<span class='line-number'>407</span>
+<span class='line-number'>408</span>
+<span class='line-number'>409</span>
+<span class='line-number'>410</span>
+<span class='line-number'>411</span>
+<span class='line-number'>412</span>
+<span class='line-number'>413</span>
+<span class='line-number'>414</span>
+<span class='line-number'>415</span>
+<span class='line-number'>416</span>
+<span class='line-number'>417</span>
+<span class='line-number'>418</span>
+<span class='line-number'>419</span>
+<span class='line-number'>420</span>
+<span class='line-number'>421</span>
+<span class='line-number'>422</span>
+<span class='line-number'>423</span>
+<span class='line-number'>424</span>
+<span class='line-number'>425</span>
+<span class='line-number'>426</span>
+<span class='line-number'>427</span>
+<span class='line-number'>428</span>
+<span class='line-number'>429</span>
+<span class='line-number'>430</span>
+<span class='line-number'>431</span>
+<span class='line-number'>432</span>
+<span class='line-number'>433</span>
+<span class='line-number'>434</span>
+<span class='line-number'>435</span>
+<span class='line-number'>436</span>
+<span class='line-number'>437</span>
+<span class='line-number'>438</span>
+<span class='line-number'>439</span>
+<span class='line-number'>440</span>
+<span class='line-number'>441</span>
+<span class='line-number'>442</span>
+<span class='line-number'>443</span>
+<span class='line-number'>444</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/sh</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c">#       pgpool-II resource agent.</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c"># This program is free software; you can redistribute it and/or modify</span>
+</span><span class='line'><span class="c"># it under the terms of version 2 of the GNU General Public License as</span>
+</span><span class='line'><span class="c"># published by the Free Software Foundation.</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c"># This program is distributed in the hope that it would be useful, but</span>
+</span><span class='line'><span class="c"># WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+</span><span class='line'><span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c"># Further, this software is distributed without any warranty that it is</span>
+</span><span class='line'><span class="c"># free of the rightful claim of any third person regarding infringement</span>
+</span><span class='line'><span class="c"># or the like.  Any license provided herein, whether implied or</span>
+</span><span class='line'><span class="c"># otherwise, applies only to this software file.  Patent licenses, if</span>
+</span><span class='line'><span class="c"># any, provided herein do not apply to combinations of this program with</span>
+</span><span class='line'><span class="c"># other software, or any other product whatsoever.</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c"># You should have received a copy of the GNU General Public License</span>
+</span><span class='line'><span class="c"># along with this program; if not, write the Free Software Foundation,</span>
+</span><span class='line'><span class="c"># Inc., 59 Temple Place - Suite 330, Boston MA 02111-1307, USA.</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c">#######################################################################</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c"># This resource agent was written by Eliot Gable &lt;egable at gmail.com&gt;</span>
+</span><span class='line'><span class="c">#</span>
+</span><span class='line'><span class="c">#######################################################################</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">#######################################################################</span>
+</span><span class='line'><span class="c"># Initialization:</span>
+</span><span class='line'>
+</span><span class='line'>: <span class="k">${</span><span class="nv">OCF_FUNCTIONS_DIR</span><span class="p">=</span><span class="k">${</span><span class="nv">OCF_ROOT</span><span class="k">}</span><span class="p">/resource.d/heartbeat</span><span class="k">}</span>
+</span><span class='line'>. <span class="k">${</span><span class="nv">OCF_FUNCTIONS_DIR</span><span class="k">}</span>/.ocf-shellfuncs
+</span><span class='line'>
+</span><span class='line'><span class="c">#######################################################################</span>
+</span><span class='line'>
+</span><span class='line'>meta_data<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        cat <span class="s">&lt;&lt;END</span>
+</span><span class='line'><span class="s">&lt;?xml version=&quot;1.0&quot;?&gt;</span>
+</span><span class='line'><span class="s">&lt;!DOCTYPE resource-agent SYSTEM &quot;ra-api-1.dtd&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;resource-agent name=&quot;pgpool2&quot; version=&quot;0.1&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;version&gt;1.0&lt;/version&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">This resource agent provides basic management of pgpool-II.</span>
+</span><span class='line'><span class="s">It starts and stops pgpool-II and monitors its status. It will</span>
+</span><span class='line'><span class="s">also monitor the status of each connection and can optionally</span>
+</span><span class='line'><span class="s">attempt to automatically reconnect detached nodes or can</span>
+</span><span class='line'><span class="s">mark the service as failed if there are any detached nodes.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Manages pgpool-II&lt;/shortdesc&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameters&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;pcp_admin_username&quot; required=&quot;1&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Administrative username for pgpool-II control.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Administrative username.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;pcp_admin_password&quot; required=&quot;1&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Administrative password for pgpool-II control.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Administrative password.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;pcp_admin_port&quot; required=&quot;1&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Administrative port for pgpool-II control.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Administrative port for PCP commands.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;pcp_admin_host&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Administrative host for pgpool-II control.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Administrative host for PCP commands.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;localhost&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;pgpool_bin&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Path to the pgpool-II binary.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Path to pgpool.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;/usr/bin/pgpool&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;pcp_attach_node_bin&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Path to the pcp_attach_node binary.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Path to pcp_attach_node.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;/usr/bin/pcp_attach_node&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;pcp_detach_node_bin&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Path to the pcp_detach_node binary.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Path to pcp_detach_node.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;/usr/bin/pcp_detach_node&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;pcp_node_count_bin&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Path to the pcp_node_count binary.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Path to pcp_node_count.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;/usr/bin/pcp_node_count&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;pcp_node_info_bin&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Path to the pcp_node_info binary.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Path to pcp_node_info.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;/usr/bin/pcp_node_info&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;stop_mode&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">Stop mode to use when stopping pgpool-II.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Stop mode for pgpool-II.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;f&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;auto_reconnect&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">If &quot;true&quot;, then during monitoring actions,</span>
+</span><span class='line'><span class="s">the resource agent will attempt to re-attach any disconnected</span>
+</span><span class='line'><span class="s">nodes. No error will be reported if re-attachment fails.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Automatically reattach failed nodes&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;boolean&quot; default=&quot;&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;fail_on_detached&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">This instructs the resource agent to mark pgpool-II in a</span>
+</span><span class='line'><span class="s">failed state if one or more of the nodes is detached. The monitor</span>
+</span><span class='line'><span class="s">action will always mark pgpool-II in a failed state if all nodes are</span>
+</span><span class='line'><span class="s">detached, so this is only useful if you want to mark pgpool-II in a</span>
+</span><span class='line'><span class="s">failed state if at least one node is detached. The auto_reconnect</span>
+</span><span class='line'><span class="s">option will always try to reconnect detached nodes (if enabled)</span>
+</span><span class='line'><span class="s">before this fail_on_detached mechanism triggers.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Marks resource as failed if at least one node is detached.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;parameter name=&quot;fail_on_node_detached&quot;&gt;</span>
+</span><span class='line'><span class="s">&lt;longdesc lang=&quot;en&quot;&gt;</span>
+</span><span class='line'><span class="s">This is similar to fail_on_detached, except you can</span>
+</span><span class='line'><span class="s">specify a comma-seperated list of node IDs. If specified, pgpool2</span>
+</span><span class='line'><span class="s">will only be marked as &quot;failed&quot; if one of the nodes in the list</span>
+</span><span class='line'><span class="s">is detached or if all nodes are detached.</span>
+</span><span class='line'><span class="s">&lt;/longdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;shortdesc lang=&quot;en&quot;&gt;Specify a list of nodes to monitor for failure.&lt;/shortdesc&gt;</span>
+</span><span class='line'><span class="s">&lt;content type=&quot;string&quot; default=&quot;&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/parameter&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;/parameters&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">&lt;actions&gt;</span>
+</span><span class='line'><span class="s">&lt;action name=&quot;start&quot;        timeout=&quot;20&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;action name=&quot;stop&quot;         timeout=&quot;40&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;action name=&quot;monitor&quot;     timeout=&quot;20&quot; interval=&quot;5&quot; depth=&quot;0&quot;/&gt;</span>
+</span><span class='line'><span class="s">&lt;action name=&quot;reload&quot;       timeout=&quot;20&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;action name=&quot;meta-data&quot;  timeout=&quot;5&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;action name=&quot;validate-all&quot;  timeout=&quot;20&quot; /&gt;</span>
+</span><span class='line'><span class="s">&lt;/actions&gt;</span>
+</span><span class='line'><span class="s">&lt;/resource-agent&gt;</span>
+</span><span class='line'><span class="s">END</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c">#######################################################################</span>
+</span><span class='line'>
+</span><span class='line'>pgpool2_usage<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>        cat <span class="s">&lt;&lt;END</span>
+</span><span class='line'><span class="s">usage: $0 {start|stop|status|monitor|validate-all|meta-data}</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">Expects to have a fully populated OCF RA-compliant environment set.</span>
+</span><span class='line'><span class="s">END</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>pgpool2_start<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">if </span>pgpool2_status; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log debug <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : already started.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'><span class="k">    if</span> <span class="nv">$PGPOOL</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>sleep 2
+</span><span class='line'>        <span class="k">if </span>pgpool2_status; <span class="k">then</span>
+</span><span class='line'><span class="k">                </span>ocf_log info <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Successfully started pgpool-II&quot;</span>
+</span><span class='line'>                <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
+</span><span class='line'>        <span class="k">else</span>
+</span><span class='line'><span class="k">                </span>ocf_log error <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Failed to start pgpool-II&quot;</span>
+</span><span class='line'>                <span class="k">return</span> <span class="nv">$OCF_ERR_GENERIC</span>
+</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'><span class="k">    else</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Failed to start pgpool-II&quot;</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'><span class="k">    return</span> <span class="nv">$OCF_ERR_GENERIC</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>pgpool2_stop<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">case </span>pgpool2_status in
+</span><span class='line'>        <span class="nv">$OCF_SUCCESS</span><span class="o">)</span>
+</span><span class='line'>            ocf_log info <span class="s2">&quot;Using $PGPOOL -m $STOP_MODE stop to stop pgpool-II&quot;</span>
+</span><span class='line'>            <span class="k">if</span> <span class="nv">$PGPOOL</span> -m <span class="nv">$STOP_MODE</span> stop; <span class="k">then</span>
+</span><span class='line'><span class="k">                </span>ocf_log info <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Successfully stopped pgpool-II&quot;</span>
+</span><span class='line'>                <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
+</span><span class='line'>            <span class="k">else</span>
+</span><span class='line'><span class="k">                </span>ocf_log error <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Failed to stop pgpool-II&quot;</span>
+</span><span class='line'>            <span class="k">fi</span>
+</span><span class='line'>            ;;
+</span><span class='line'>        <span class="nv">$OCF_NOT_RUNNING</span><span class="o">)</span>
+</span><span class='line'>            ocf_log debug <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : already stopped.&quot;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
+</span><span class='line'>            ;;
+</span><span class='line'>    <span class="k">esac</span>
+</span><span class='line'><span class="k">    return</span> <span class="nv">$OCF_ERR_GENERIC</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>pgpool2_status<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> ! -r <span class="s2">&quot;/var/run/pgpool/pgpool.pid&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        return</span> <span class="nv">$OCF_NOT_RUNNING</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'><span class="k">    </span><span class="nv">ps_info</span><span class="o">=</span><span class="k">$(</span>ps ax | grep <span class="s2">&quot;[p]gpool[^:]&quot;</span> | grep <span class="k">$(</span>cat /var/run/pgpool/pgpool.pid<span class="k">))</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${ps_info}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        return</span> <span class="nv">$OCF_NOT_RUNNING</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'>        <span class="c"># Try to reconnect any detached nodes</span>
+</span><span class='line'>        <span class="k">if </span>is_ocf_true <span class="k">${</span><span class="nv">OCF_RESKEY_auto_reconnect</span><span class="k">}</span> ; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span><span class="nv">NODE_COUNT</span><span class="o">=</span><span class="k">$(</span><span class="nv">$PCP_NODE_COUNT</span> 1 <span class="nv">$OCF_RESKEY_pcp_admin_host</span> <span class="nv">$OCF_RESKEY_pcp_admin_port</span> <span class="nv">$OCF_RESKEY_pcp_admin_username</span> <span class="nv">$OCF_RESKEY_pcp_admin_password</span><span class="k">)</span>
+</span><span class='line'>            <span class="k">for </span>node in <span class="sb">`</span>seq 0 <span class="k">$((</span>NODE_COUNT-1<span class="k">))</span><span class="sb">`</span>; <span class="k">do</span>
+</span><span class='line'><span class="k">                </span><span class="nv">NODE_INFO</span><span class="o">=</span><span class="k">$(</span><span class="nv">$PCP_NODE_INFO</span> 1 <span class="nv">$OCF_RESKEY_pcp_admin_host</span> <span class="nv">$OCF_RESKEY_pcp_admin_port</span> <span class="nv">$OCF_RESKEY_pcp_admin_username</span> <span class="nv">$OCF_RESKEY_pcp_admin_password</span> <span class="nv">$node</span> | awk <span class="s1">&#39;{print $3}&#39;</span><span class="k">)</span>
+</span><span class='line'>                <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$NODE_INFO&quot;</span> <span class="o">=</span> <span class="s2">&quot;3&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">                    </span>ocf_log info <span class="s2">&quot;Node $node is currently detached. Attempting to reattach the node.&quot;</span>
+</span><span class='line'>                    <span class="nv">$PCP_ATTACH_NODE</span> 1 <span class="nv">$OCF_RESKEY_pcp_admin_host</span> <span class="nv">$OCF_RESKEY_pcp_admin_port</span> <span class="nv">$OCF_RESKEY_pcp_admin_username</span> <span class="nv">$OCF_RESKEY_pcp_admin_password</span> <span class="nv">$node</span>
+</span><span class='line'>                    <span class="nv">ATTACHED</span><span class="o">=</span><span class="s2">&quot;1&quot;</span>
+</span><span class='line'>                <span class="k">fi</span>
+</span><span class='line'><span class="k">            done</span>
+</span><span class='line'><span class="k">            if</span> <span class="o">[</span> -n <span class="s2">&quot;${ATTACHED}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">                </span>sleep 1
+</span><span class='line'>            <span class="k">fi</span>
+</span><span class='line'><span class="k">        fi</span>
+</span><span class='line'>        <span class="c"># Fail if configured to fail on one or more detached nodes and a node is still detached</span>
+</span><span class='line'>        <span class="k">if </span>is_ocf_true <span class="k">${</span><span class="nv">OCF_RESKEY_fail_on_detached</span><span class="k">}</span> ; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span><span class="nv">NODE_COUNT</span><span class="o">=</span><span class="k">$(</span><span class="nv">$PCP_NODE_COUNT</span> 1 <span class="nv">$OCF_RESKEY_pcp_admin_host</span> <span class="nv">$OCF_RESKEY_pcp_admin_port</span> <span class="nv">$OCF_RESKEY_pcp_admin_username</span> <span class="nv">$OCF_RESKEY_pcp_admin_password</span><span class="k">)</span>
+</span><span class='line'>            <span class="k">for </span>node in <span class="sb">`</span>seq 0 <span class="k">$((</span>NODE_COUNT-1<span class="k">))</span><span class="sb">`</span>; <span class="k">do</span>
+</span><span class='line'><span class="k">                </span><span class="nv">NODE_INFO</span><span class="o">=</span><span class="k">$(</span><span class="nv">$PCP_NODE_INFO</span> 1 <span class="nv">$OCF_RESKEY_pcp_admin_host</span> <span class="nv">$OCF_RESKEY_pcp_admin_port</span> <span class="nv">$OCF_RESKEY_pcp_admin_username</span> <span class="nv">$OCF_RESKEY_pcp_admin_password</span> <span class="nv">$node</span> | awk <span class="s1">&#39;{print $3}&#39;</span><span class="k">)</span>
+</span><span class='line'>                <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$NODE_INFO&quot;</span> <span class="o">=</span> <span class="s2">&quot;3&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">                    </span>ocf_log error <span class="s2">&quot;Node $node is detached. The pgpool-II service has failed.&quot;</span>
+</span><span class='line'>                    <span class="k">return</span> <span class="nv">$OCF_ERR_GENERIC</span>
+</span><span class='line'>                <span class="k">fi</span>
+</span><span class='line'><span class="k">            done</span>
+</span><span class='line'><span class="k">        fi</span>
+</span><span class='line'>        <span class="c"># Fail if one of the specifically configured nodes is detached at this point</span>
+</span><span class='line'>        <span class="k">if</span> <span class="o">[</span> -n <span class="s2">&quot;${OCF_RESKEY_fail_on_node_detached}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span><span class="nv">NODE_COUNT</span><span class="o">=</span><span class="k">$(</span><span class="nv">$PCP_NODE_COUNT</span> 1 <span class="nv">$OCF_RESKEY_pcp_admin_host</span> <span class="nv">$OCF_RESKEY_pcp_admin_port</span> <span class="nv">$OCF_RESKEY_pcp_admin_username</span> <span class="nv">$OCF_RESKEY_pcp_admin_password</span><span class="k">)</span>
+</span><span class='line'>            <span class="k">for </span>node in <span class="sb">`</span>seq 0 <span class="k">$((</span>NODE_COUNT-1<span class="k">))</span><span class="sb">`</span>; <span class="k">do</span>
+</span><span class='line'><span class="k">                </span><span class="nv">NODE_INFO</span><span class="o">=</span><span class="k">$(</span><span class="nv">$PCP_NODE_INFO</span> 1 <span class="nv">$OCF_RESKEY_pcp_admin_host</span> <span class="nv">$OCF_RESKEY_pcp_admin_port</span> <span class="nv">$OCF_RESKEY_pcp_admin_username</span> <span class="nv">$OCF_RESKEY_pcp_admin_password</span> <span class="nv">$node</span> | awk <span class="s1">&#39;{print $3}&#39;</span><span class="k">)</span>
+</span><span class='line'>                <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;$NODE_INFO&quot;</span> <span class="o">=</span> <span class="s2">&quot;3&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">                    </span><span class="nv">TOKEN</span><span class="o">=</span><span class="k">${</span><span class="nv">OCF_RESKEY_fail_on_node_detached</span><span class="p">%%,*</span><span class="k">}</span>
+</span><span class='line'>                    <span class="nv">TOKEN_STRING</span><span class="o">=</span><span class="k">${</span><span class="nv">OCF_RESKEY_fail_on_node_detached</span><span class="p">#*,</span><span class="k">}</span>
+</span><span class='line'>                    <span class="k">while</span> <span class="o">[</span> -n <span class="s2">&quot;$TOKEN&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> <span class="s2">&quot;${TOKEN}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;${TOKEN_STRING}&quot;</span> <span class="o">]</span>; <span class="k">do</span>
+</span><span class='line'><span class="k">                        if</span> <span class="o">[</span> <span class="s2">&quot;$TOKEN&quot;</span> -eq <span class="nv">$node</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">                            </span>ocf_log error <span class="s2">&quot;Node $node is detached. The pgpool-II service has failed.&quot;</span>
+</span><span class='line'>                            <span class="k">return</span> <span class="nv">$OCF_ERR_GENERIC</span>
+</span><span class='line'>                        <span class="k">fi</span>
+</span><span class='line'><span class="k">                        </span><span class="nv">TOKEN</span><span class="o">=</span><span class="k">${</span><span class="nv">TOKEN_STRING</span><span class="p">%%,*</span><span class="k">}</span>
+</span><span class='line'>                        <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;${TOKEN_STRING}&quot;</span> <span class="o">==</span> <span class="s2">&quot;${TOKEN_STRING#*,}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">                            </span><span class="nv">TOKEN_STRING</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+</span><span class='line'>                        <span class="k">else</span>
+</span><span class='line'><span class="k">                            </span><span class="nv">TOKEN_STRING</span><span class="o">=</span><span class="k">${</span><span class="nv">TOKEN_STRING</span><span class="p">#*,</span><span class="k">}</span>
+</span><span class='line'>                        <span class="k">fi</span>
+</span><span class='line'><span class="k">                    done</span>
+</span><span class='line'><span class="k">                fi</span>
+</span><span class='line'><span class="k">            done</span>
+</span><span class='line'><span class="k">        fi</span>
+</span><span class='line'><span class="k">    fi</span>
+</span><span class='line'>    <span class="c"># Service is running and there is no reason to fail</span>
+</span><span class='line'>    <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>pgpool2_validate<span class="o">()</span> <span class="o">{</span>
+</span><span class='line'>    <span class="c"># If we&#39;re running as a clone, are the clone meta attrs OK?</span>
+</span><span class='line'><span class="c">#    if [ &quot;${OCF_RESKEY_CRM_meta_clone}&quot; ]; then</span>
+</span><span class='line'><span class="c">#       if [ &quot;${OCF_RESKEY_CRM_meta_clone_node_max}&quot; != 1 ]; then</span>
+</span><span class='line'><span class="c">#           ocf_log error &quot;Misconfigured clone parameters. Must set meta attribute \&quot;clone_node_max\&quot; to 1, got ${OCF_RESKEY_CRM_meta_clone_node_max}.&quot;</span>
+</span><span class='line'><span class="c">#           return $OCF_ERR_ARGS</span>
+</span><span class='line'><span class="c">#       fi</span>
+</span><span class='line'><span class="c">#    fi</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_admin_username}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_admin_username\&quot;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_admin_password}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_admin_password\&quot;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_admin_host}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_admin_host\&quot;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_admin_port}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_admin_port\&quot;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'>    <span class="c"># Did we get a path for the pgpool binary?</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pgpool_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pgpool_bin\&quot;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'><span class="k">        if</span> <span class="o">[</span> -x <span class="s2">&quot;$PGPOOL&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span>ocf_log error <span class="s2">&quot;The pgpool binary is not executable or is not installed.&quot;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_ERR_INSTALLED</span>
+</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'><span class="k">    fi</span>
+</span><span class='line'>    <span class="c"># Did we get a path for the pcp_attach_node binary?</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_attach_node_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_attach_node_bin\&quot;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'><span class="k">        if</span> <span class="o">[</span> -x <span class="s2">&quot;$PCP_ATTACH_NODE&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span>ocf_log error <span class="s2">&quot;The pcp_attach_node binary is not executable or is not installed.&quot;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_ERR_INSTALLED</span>
+</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'><span class="k">    fi</span>
+</span><span class='line'>    <span class="c"># Did we get a path for the pcp_detach_node binary?</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_detach_node_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_detach_node_bin\&quot;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'><span class="k">        if</span> <span class="o">[</span> -x <span class="s2">&quot;$PCP_DETACH_NODE&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span>ocf_log error <span class="s2">&quot;The pcp_detach_node binary is not executable or is not installed.&quot;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_ERR_INSTALLED</span>
+</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'><span class="k">    fi</span>
+</span><span class='line'>    <span class="c"># Did we get a path for the pcp_node_count binary?</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_node_count_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_node_count_bin\&quot;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'><span class="k">        if</span> <span class="o">[</span> -x <span class="s2">&quot;$PCP_NODE_COUNT&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span>ocf_log error <span class="s2">&quot;The pcp_node_count binary is not executable or is not installed.&quot;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_ERR_INSTALLED</span>
+</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'><span class="k">    fi</span>
+</span><span class='line'>    <span class="c"># Did we get a path for the pcp_node_info binary?</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_node_info_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_node_info_bin\&quot;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'><span class="k">        if</span> <span class="o">[</span> -x <span class="s2">&quot;$PCP_NODE_INFO&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">            </span>ocf_log error <span class="s2">&quot;The pcp_node_info binary is not executable or is not installed.&quot;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_ERR_INSTALLED</span>
+</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'><span class="k">    fi</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -n <span class="s2">&quot;${OCF_RESKEY_stop_mode}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        if </span><span class="nb">echo</span> <span class="s2">&quot;$OCF_RESKEY_stop_mode&quot;</span> | grep -E <span class="s1">&#39;[fsi]|fast|start|immediate&#39;</span>; <span class="k">then </span>
+</span><span class='line'><span class="k">            </span>ocf_log error <span class="s2">&quot;Stop mode is invalid.&quot;</span>
+</span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>        <span class="k">fi</span>
+</span><span class='line'><span class="k">    else</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Stop mode was not specified.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -n <span class="s2">&quot;${OCF_RESKEY_auto_reconnect}&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
+</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;${OCF_RESKEY_auto_reconnect}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
+</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;${OCF_RESKEY_auto_reconnect}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;false&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Parameter &#39;auto_reconnect&#39; must be empty, &#39;true&#39;, or &#39;false&#39;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -n <span class="s2">&quot;${OCF_RESKEY_fail_on_detached}&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
+</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;${OCF_RESKEY_fail_on_detached}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
+</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;${OCF_RESKEY_fail_on_detached}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;false&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Parameter &#39;fail_on_detached&#39; must be empty, &#39;true&#39;, or &#39;false&#39;.&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>    <span class="k">fi</span>
+</span><span class='line'><span class="k">    </span><span class="nb">shopt</span> -s extglob
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -n <span class="s2">&quot;${OCF_RESKEY_fail_on_node_detached}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span><span class="nv">TOKEN</span><span class="o">=</span><span class="k">${</span><span class="nv">OCF_RESKEY_fail_on_node_detached</span><span class="p">%%,*</span><span class="k">}</span>
+</span><span class='line'>        <span class="nv">TOKEN_STRING</span><span class="o">=</span><span class="k">${</span><span class="nv">OCF_RESKEY_fail_on_node_detached</span><span class="p">#*,</span><span class="k">}</span>
+</span><span class='line'>        <span class="k">while</span> <span class="o">[</span> -n <span class="nv">$TOKEN</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> <span class="s2">&quot;${TOKEN}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;${TOKEN_STRING}&quot;</span> <span class="o">]</span>; <span class="k">do</span>
+</span><span class='line'><span class="k">            case</span> <span class="nv">$TOKEN</span> in
+</span><span class='line'>                <span class="o">[</span>^0-9<span class="o">])</span>
+</span><span class='line'>                    ocf_log error <span class="s2">&quot;Invalid token &#39;${TOKEN}&#39; in parameter &#39;fail_on_node_detached&#39;.&quot;</span>
+</span><span class='line'>                    <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
+</span><span class='line'>                ;;
+</span><span class='line'>            <span class="k">esac</span>
+</span><span class='line'><span class="k">            </span><span class="nv">TOKEN</span><span class="o">=</span><span class="k">${</span><span class="nv">TOKEN_STRING</span><span class="p">%%,*</span><span class="k">}</span>
+</span><span class='line'>            <span class="k">if</span> <span class="o">[</span> <span class="s2">&quot;${TOKEN_STRING}&quot;</span> <span class="o">==</span> <span class="s2">&quot;${TOKEN_STRING#*,}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">                </span><span class="nv">TOKEN_STRING</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
+</span><span class='line'>            <span class="k">else</span>
+</span><span class='line'><span class="k">                </span><span class="nv">TOKEN_STRING</span><span class="o">=</span><span class="k">${</span><span class="nv">TOKEN_STRING</span><span class="p">#*,</span><span class="k">}</span>
+</span><span class='line'>            <span class="k">fi</span>
+</span><span class='line'><span class="k">        done</span>
+</span><span class='line'><span class="k">    fi</span>
+</span><span class='line'><span class="k">    return</span> <span class="nv">$OCF_SUCCESS</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># These two actions must always succeed</span>
+</span><span class='line'><span class="k">case</span> <span class="nv">$__OCF_ACTION</span> in
+</span><span class='line'>meta-data<span class="o">)</span>      meta_data
+</span><span class='line'>                <span class="c"># OCF variables are not set when querying meta-data</span>
+</span><span class='line'>                <span class="nb">exit </span>0
+</span><span class='line'>                ;;
+</span><span class='line'>usage|help<span class="o">)</span>     pgpool2_usage
+</span><span class='line'>                <span class="nb">exit</span> <span class="nv">$OCF_SUCCESS</span>
+</span><span class='line'>                ;;
+</span><span class='line'><span class="k">esac</span>
+</span><span class='line'>
+</span><span class='line'>pgpool2_validate <span class="o">||</span> <span class="nb">exit</span> <span class="nv">$?</span>
+</span><span class='line'>
+</span><span class='line'><span class="nv">PGPOOL</span><span class="o">=</span><span class="nv">$OCF_RESKEY_pgpool_bin</span>
+</span><span class='line'><span class="nv">PCP_ATTACH_NODE</span><span class="o">=</span><span class="nv">$OCF_RESKEY_pcp_attach_node_bin</span>
+</span><span class='line'><span class="nv">PCP_DETACH_NODE</span><span class="o">=</span><span class="nv">$OCF_RESKEY_pcp_detach_node_bin</span>
+</span><span class='line'><span class="nv">PCP_NODE_COUNT</span><span class="o">=</span><span class="nv">$OCF_RESKEY_pcp_node_count_bin</span>
+</span><span class='line'><span class="nv">PCP_NODE_INFO</span><span class="o">=</span><span class="nv">$OCF_RESKEY_pcp_node_info_bin</span>
+</span><span class='line'><span class="nv">STOP_MODE</span><span class="o">=</span><span class="nv">$OCF_RESKEY_stop_mode</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">case</span> <span class="nv">$__OCF_ACTION</span> in
+</span><span class='line'>start<span class="o">)</span>          pgpool2_start;;
+</span><span class='line'>stop<span class="o">)</span>           pgpool2_stop;;
+</span><span class='line'>status|monitor<span class="o">)</span> pgpool2_status;;
+</span><span class='line'>validate-all<span class="o">)</span>   ;;
+</span><span class='line'>*<span class="o">)</span>              pgpool2_usage
+</span><span class='line'>                <span class="nb">exit</span> <span class="nv">$OCF_ERR_UNIMPLEMENTED</span>
+</span><span class='line'>                ;;
+</span><span class='line'><span class="k">esac</span>
+</span><span class='line'><span class="nv">rc</span><span class="o">=</span><span class="nv">$?</span>
+</span><span class='line'>ocf_log debug <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} $__OCF_ACTION returned $rc&quot;</span>
+</span><span class='line'><span class="nb">exit</span> <span class="nv">$rc</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Update the configuration so pgPool-II is clustered
+<strong>Change the parameters below to match your environment!</strong></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>crm configure primitive pgPool ocf:heartbeat:pgpool2 <span class="se">\</span>
+</span><span class='line'>params <span class="nv">pcp_admin_username</span><span class="o">=</span>postgres <span class="se">\</span>
+</span><span class='line'>params <span class="nv">pcp_admin_password</span><span class="o">=</span>postgres <span class="se">\</span>
+</span><span class='line'>params <span class="nv">pcp_admin_port</span><span class="o">=</span>9898 <span class="se">\</span>
+</span><span class='line'>params <span class="nv">pcp_admin_host</span><span class="o">=</span>localhost <span class="se">\</span>
+</span><span class='line'>params <span class="nv">pgpool_bin</span><span class="o">=</span>/usr/sbin/pgpool <span class="se">\</span>
+</span><span class='line'>params <span class="nv">pcp_attach_node_bin</span><span class="o">=</span>/usr/bin/pcp_attach_node <span class="se">\</span>
+</span><span class='line'>params <span class="nv">pcp_detach_node_bin</span><span class="o">=</span>/usr/bin/pcp_detach_node <span class="se">\</span>
+</span><span class='line'>params <span class="nv">pcp_node_count_bin</span><span class="o">=</span>/usr/bin/pcp_node_count <span class="se">\</span>
+</span><span class='line'>params <span class="nv">pcp_node_info</span><span class="o">=</span>/usr/bin/pcp_node_info <span class="se">\</span>
+</span><span class='line'>params <span class="nv">stop_mode</span><span class="o">=</span>f <span class="se">\</span>
+</span><span class='line'>params <span class="nv">auto_reconnect</span><span class="o">=</span>t <span class="se">\</span>
+</span><span class='line'>op monitor <span class="nv">interval</span><span class="o">=</span>1min
+</span><span class='line'>
+</span><span class='line'>crm configure show
+</span><span class='line'>crm status
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Configure Pacemaker to keep multiple resources together. In this case, pgPool-II can only run on the system with the ClusterIP.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>crm configure colocation pgpool-with-ip INFINITY: pgPool ClusterIP
+</span><span class='line'>crm configure show
+</span><span class='line'>crm_mon
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Configure Pacemaker to start the ClusterIP before pgPool and stop it after pgPool is stopped.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>crm configure order pgPool-after-ip mandatory: ClusterIP pgPool
+</span><span class='line'>crm configure show
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>After waiting a few moments CoroSync should start up pgPool on one of the nodes.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>crm_mon
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>References:</h3>
+
+<p><a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-en.html#install">Installing pgPool-II on CentOS</a>
+ClusterLabs <a href="http://www.clusterlabs.org/doc/Cluster_from_Scratch.pdf">Cluster From Scratch</a></p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Myles A. K. Steinhauser</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-09-24T14:00:00-05:00" pubdate  data-updated="true" >Sep 24<span>th</span>, 2011</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/centos/'>centos</a>, <a class='category' href='/blog/categories/high-availability/'>high availability</a>, <a class='category' href='/blog/categories/pacemaker/'>pacemaker</a>, <a class='category' href='/blog/categories/postgresql/'>postgresql</a>, <a class='category' href='/blog/categories/servers/'>servers</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://masteinhauser.github.com/blog/2011/09/24/pacemaker-pgpool2/" data-via="masteinhauser" data-counturl="http://masteinhauser.github.com/blog/2011/09/24/pacemaker-pgpool2/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+</div>
+
+    
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/09/24/pacemaker-pgpool2/">Install Pacemaker + pgPool-II 3.1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/09/24/corosync-pacemaker-apache2/">Install CoroSync + Pacemaker on CentOS 5.6</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/09/22/hello-world/">Hello World</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/masteinhauser">@masteinhauser</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'masteinhauser',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("masteinhauser", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/masteinhauser" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @masteinhauser</a>
+  
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2011 - Myles A. K. Steinhauser -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+    (function () {
+      var disqus_shortname = 'masteinhauserblog';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://masteinhauser.github.com/blog/2011/09/24/pacemaker-pgpool2/';
+        var disqus_url = 'http://masteinhauser.github.com/blog/2011/09/24/pacemaker-pgpool2/';
+        var disqus_script = 'embed.js'
+      
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-25897542-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>

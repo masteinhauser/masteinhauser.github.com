@@ -4,7 +4,7 @@
   <title>Bits & Bytes of Life</title>
   <link href="http://masteinhauser.github.com/atom.xml" rel="self"/>
   <link href="http://masteinhauser.github.com/"/>
-  <updated>2011-09-24T19:53:56-05:00</updated>
+  <updated>2011-09-25T20:21:56-05:00</updated>
   <id>http://masteinhauser.github.com/</id>
   <author>
     <name>Myles A. K. Steinhauser</name>
@@ -472,8 +472,6 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;span class=&#8217;line-number&#8217;&gt;440&lt;/span&gt;
 &lt;span class=&#8217;line-number&#8217;&gt;441&lt;/span&gt;
 &lt;span class=&#8217;line-number&#8217;&gt;442&lt;/span&gt;
-&lt;span class=&#8217;line-number&#8217;&gt;443&lt;/span&gt;
-&lt;span class=&#8217;line-number&#8217;&gt;444&lt;/span&gt;
 &lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/sh&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#       pgpool-II resource agent.&lt;/span&gt;
@@ -674,12 +672,14 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PGPOOL&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;sleep 2
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;Trying to start pgpool&#8230;&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /tmp/pgpool
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        sleep 2
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;pgpool2_status; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Successfully started pgpool-II&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Failed to start pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;pgpool couldn&amp;#39;t be started, why?&amp;quot;&lt;/span&gt; /tmp/pgpool
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Failed to start pgpool-II&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_GENERIC&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    else&lt;/span&gt;
@@ -689,32 +689,27 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;pgpool2_stop&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;case &lt;/span&gt;pgpool2_status in
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;Using $PGPOOL -m $STOP_MODE stop to stop pgpool-II&amp;quot;&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PGPOOL&lt;/span&gt; -m &lt;span class=&quot;nv&quot;&gt;$STOP_MODE&lt;/span&gt; stop; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Successfully stopped pgpool-II&amp;quot;&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;                &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;                &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Failed to stop pgpool-II&amp;quot;&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            ;;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;nv&quot;&gt;$OCF_NOT_RUNNING&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            ocf_log debug &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : already stopped.&amp;quot;&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            ;;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;esac&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_GENERIC&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;Using $PGPOOL -m $STOP_MODE stop to stop pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$PGPOOL&lt;/span&gt; -m &lt;span class=&quot;nv&quot;&gt;$STOP_MODE&lt;/span&gt; stop; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Successfully stopped pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log info &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESOURCE_INSTANCE} Already stopped pgpool-II&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;pgpool2_status&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; ! -r &lt;span class=&quot;s2&quot;&gt;&amp;quot;/var/run/pgpool/pgpool.pid&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_NOT_RUNNING&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ps_info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;ps ax | grep &lt;span class=&quot;s2&quot;&gt;&amp;quot;[p]gpool[^:]&amp;quot;&lt;/span&gt; | grep &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;cat /var/run/pgpool/pgpool.pid&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${ps_info}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_NOT_RUNNING&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ps_info&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;ps ax | grep &lt;span class=&quot;s2&quot;&gt;&amp;quot;pgpool&amp;quot;&lt;/span&gt; | grep &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;cat /var/run/pgpool/pgpool.pid&lt;span class=&quot;k&quot;&gt;))&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;ps_info: $ps_info&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /tmp/pgpool
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$ps_info&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;Found pgpool is NOT running&#8230;&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /tmp/pgpool
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_NOT_RUNNING&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;Found pgpool is running&#8230;&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /tmp/pgpool
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;c&quot;&gt;# Try to reconnect any detached nodes&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;if &lt;/span&gt;is_ocf_true &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_RESKEY_auto_reconnect&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; ; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;NODE_COUNT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$PCP_NODE_COUNT&lt;/span&gt; 1 &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_host&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_port&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_username&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_admin_password&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
@@ -766,6 +761,7 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Service is running and there is no reason to fail&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;pgpool should be running&#8230;&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /tmp/pgpool
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_SUCCESS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
@@ -777,24 +773,24 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#           return $OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#       fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;#    fi&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_admin_username}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_pcp_admin_username&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_admin_username\&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_admin_password}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_pcp_admin_password&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_admin_password\&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_admin_host}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_pcp_admin_host&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_admin_host\&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_admin_port}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_pcp_admin_port&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_admin_port\&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pgpool binary?&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pgpool_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_pgpool_bin&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pgpool_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
@@ -804,7 +800,7 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pcp_attach_node binary?&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_attach_node_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_pcp_attach_node_bin&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_attach_node_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
@@ -814,7 +810,7 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pcp_detach_node binary?&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_detach_node_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_pcp_detach_node_bin&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_detach_node_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
@@ -824,7 +820,7 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pcp_node_count binary?&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_node_count_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_pcp_node_count_bin&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_node_count_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
@@ -834,7 +830,7 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;c&quot;&gt;# Did we get a path for the pcp_node_info binary?&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_pcp_node_info_bin}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -z &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_pcp_node_info_bin&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Missing required parameter \&amp;quot;pcp_node_info_bin\&amp;quot;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;
@@ -843,8 +839,8 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_INSTALLED&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    fi&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_stop_mode}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        if &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_stop_mode&amp;quot;&lt;/span&gt; | grep -E &lt;span class=&quot;s1&quot;&gt;&amp;#39;[fsi]|fast|start|immediate&amp;#39;&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then &lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_stop_mode&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        if&lt;/span&gt; ! &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_stop_mode&amp;quot;&lt;/span&gt; | grep -E &lt;span class=&quot;s1&quot;&gt;&amp;#39;[fsi]|fast|start|immediate&amp;#39;&lt;/span&gt; &amp;gt;&amp;gt; /dev/null; &lt;span class=&quot;k&quot;&gt;then &lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;            &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Stop mode is invalid.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
@@ -852,20 +848,20 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Stop mode was not specified.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_auto_reconnect}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_auto_reconnect}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_auto_reconnect}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;false&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_auto_reconnect&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_auto_reconnect&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_auto_reconnect&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;false&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Parameter &amp;#39;auto_reconnect&amp;#39; must be empty, &amp;#39;true&amp;#39;, or &amp;#39;false&amp;#39;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_fail_on_detached}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_fail_on_detached}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_fail_on_detached&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_fail_on_detached&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;true&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;       &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_fail_on_detached}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;false&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;ocf_log error &lt;span class=&quot;s2&quot;&gt;&amp;quot;Parameter &amp;#39;fail_on_detached&amp;#39; must be empty, &amp;#39;true&amp;#39;, or &amp;#39;false&amp;#39;.&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$OCF_ERR_ARGS&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;    &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;shopt&lt;/span&gt; -s extglob
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;${OCF_RESKEY_fail_on_node_detached}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;s2&quot;&gt;&amp;quot;$OCF_RESKEY_fail_on_node_detached&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;        &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;TOKEN&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_RESKEY_fail_on_node_detached&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;%%,*&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;nv&quot;&gt;TOKEN_STRING&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OCF_RESKEY_fail_on_node_detached&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;#*,&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;        &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; -n &lt;span class=&quot;nv&quot;&gt;$TOKEN&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN}&amp;quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;${TOKEN_STRING}&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
@@ -905,7 +901,7 @@ Refer to &lt;a href=&quot;http://pgpool.projects.postgresql.org/pgpool-II/doc/tu
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;PCP_NODE_COUNT&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_node_count_bin&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;PCP_NODE_INFO&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_pcp_node_info_bin&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;STOP_MODE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$OCF_RESKEY_stop_mode&lt;/span&gt;
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;$(date)&amp;quot;&lt;/span&gt; &amp;gt;&amp;gt; /tmp/pgpool
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$__OCF_ACTION&lt;/span&gt; in
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;start&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;          pgpool2_start;;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;stop&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;           pgpool2_stop;;
@@ -1044,7 +1040,7 @@ If  a message &amp;#8220;Invalid digest&amp;#8221; appears from the corosync exe
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Define receiving server and copy to it.&lt;/span&gt;
 &lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;node&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;172.25.3.26
-&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;cat /etc/corosync/authkey | ssh root@&lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;cat &amp;gt;&amp;gt; /etc/corosync/authkey; chmod 0400 /etc/corosync/authkey; chown hacluster:hacluster /etc/corosync/authkey&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;cat /etc/corosync/authkey | ssh root@&lt;span class=&quot;nv&quot;&gt;$node&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&amp;quot;cat &amp;gt;&amp;gt; /etc/corosync/authkey; chmod 0400 /etc/corosync/authkey; chown hacluster:haclient /etc/corosync/authkey&amp;quot;&lt;/span&gt;
 &lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
 
 

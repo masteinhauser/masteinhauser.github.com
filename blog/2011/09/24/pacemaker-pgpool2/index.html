@@ -541,8 +541,6 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 <span class='line-number'>440</span>
 <span class='line-number'>441</span>
 <span class='line-number'>442</span>
-<span class='line-number'>443</span>
-<span class='line-number'>444</span>
 </pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c">#!/bin/sh</span>
 </span><span class='line'><span class="c">#</span>
 </span><span class='line'><span class="c">#       pgpool-II resource agent.</span>
@@ -743,12 +741,14 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
 </span><span class='line'>    <span class="k">fi</span>
 </span><span class='line'><span class="k">    if</span> <span class="nv">$PGPOOL</span>; <span class="k">then</span>
-</span><span class='line'><span class="k">        </span>sleep 2
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;Trying to start pgpool...&quot;</span> &gt;&gt; /tmp/pgpool
+</span><span class='line'>        sleep 2
 </span><span class='line'>        <span class="k">if </span>pgpool2_status; <span class="k">then</span>
 </span><span class='line'><span class="k">                </span>ocf_log info <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Successfully started pgpool-II&quot;</span>
 </span><span class='line'>                <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
 </span><span class='line'>        <span class="k">else</span>
-</span><span class='line'><span class="k">                </span>ocf_log error <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Failed to start pgpool-II&quot;</span>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;pgpool couldn&#39;t be started, why?&quot;</span> /tmp/pgpool
+</span><span class='line'>                ocf_log error <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Failed to start pgpool-II&quot;</span>
 </span><span class='line'>                <span class="k">return</span> <span class="nv">$OCF_ERR_GENERIC</span>
 </span><span class='line'>        <span class="k">fi</span>
 </span><span class='line'><span class="k">    else</span>
@@ -758,32 +758,27 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'><span class="o">}</span>
 </span><span class='line'>
 </span><span class='line'>pgpool2_stop<span class="o">()</span> <span class="o">{</span>
-</span><span class='line'>    <span class="k">case </span>pgpool2_status in
-</span><span class='line'>        <span class="nv">$OCF_SUCCESS</span><span class="o">)</span>
-</span><span class='line'>            ocf_log info <span class="s2">&quot;Using $PGPOOL -m $STOP_MODE stop to stop pgpool-II&quot;</span>
-</span><span class='line'>            <span class="k">if</span> <span class="nv">$PGPOOL</span> -m <span class="nv">$STOP_MODE</span> stop; <span class="k">then</span>
-</span><span class='line'><span class="k">                </span>ocf_log info <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Successfully stopped pgpool-II&quot;</span>
-</span><span class='line'>                <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
-</span><span class='line'>            <span class="k">else</span>
-</span><span class='line'><span class="k">                </span>ocf_log error <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Failed to stop pgpool-II&quot;</span>
-</span><span class='line'>            <span class="k">fi</span>
-</span><span class='line'>            ;;
-</span><span class='line'>        <span class="nv">$OCF_NOT_RUNNING</span><span class="o">)</span>
-</span><span class='line'>            ocf_log debug <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : already stopped.&quot;</span>
-</span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
-</span><span class='line'>            ;;
-</span><span class='line'>    <span class="k">esac</span>
-</span><span class='line'><span class="k">    return</span> <span class="nv">$OCF_ERR_GENERIC</span>
+</span><span class='line'>    ocf_log info <span class="s2">&quot;Using $PGPOOL -m $STOP_MODE stop to stop pgpool-II&quot;</span>
+</span><span class='line'>    <span class="k">if</span> <span class="nv">$PGPOOL</span> -m <span class="nv">$STOP_MODE</span> stop; <span class="k">then</span>
+</span><span class='line'><span class="k">        </span>ocf_log info <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Successfully stopped pgpool-II&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
+</span><span class='line'>    <span class="k">else</span>
+</span><span class='line'><span class="k">        </span>ocf_log info <span class="s2">&quot;${OCF_RESOURCE_INSTANCE} Already stopped pgpool-II&quot;</span>
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
+</span><span class='line'>    <span class="k">fi</span>
 </span><span class='line'><span class="o">}</span>
 </span><span class='line'>
 </span><span class='line'>pgpool2_status<span class="o">()</span> <span class="o">{</span>
 </span><span class='line'>    <span class="k">if</span> <span class="o">[</span> ! -r <span class="s2">&quot;/var/run/pgpool/pgpool.pid&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        return</span> <span class="nv">$OCF_NOT_RUNNING</span>
 </span><span class='line'>    <span class="k">fi</span>
-</span><span class='line'><span class="k">    </span><span class="nv">ps_info</span><span class="o">=</span><span class="k">$(</span>ps ax | grep <span class="s2">&quot;[p]gpool[^:]&quot;</span> | grep <span class="k">$(</span>cat /var/run/pgpool/pgpool.pid<span class="k">))</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${ps_info}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
-</span><span class='line'><span class="k">        return</span> <span class="nv">$OCF_NOT_RUNNING</span>
+</span><span class='line'><span class="k">    </span><span class="nv">ps_info</span><span class="o">=</span><span class="k">$(</span>ps ax | grep <span class="s2">&quot;pgpool&quot;</span> | grep <span class="k">$(</span>cat /var/run/pgpool/pgpool.pid<span class="k">))</span>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;ps_info: $ps_info&quot;</span> &gt;&gt; /tmp/pgpool
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$ps_info&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;Found pgpool is NOT running...&quot;</span> &gt;&gt; /tmp/pgpool
+</span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_NOT_RUNNING</span>
 </span><span class='line'>    <span class="k">else</span>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;Found pgpool is running...&quot;</span> &gt;&gt; /tmp/pgpool
 </span><span class='line'>        <span class="c"># Try to reconnect any detached nodes</span>
 </span><span class='line'>        <span class="k">if </span>is_ocf_true <span class="k">${</span><span class="nv">OCF_RESKEY_auto_reconnect</span><span class="k">}</span> ; <span class="k">then</span>
 </span><span class='line'><span class="k">            </span><span class="nv">NODE_COUNT</span><span class="o">=</span><span class="k">$(</span><span class="nv">$PCP_NODE_COUNT</span> 1 <span class="nv">$OCF_RESKEY_pcp_admin_host</span> <span class="nv">$OCF_RESKEY_pcp_admin_port</span> <span class="nv">$OCF_RESKEY_pcp_admin_username</span> <span class="nv">$OCF_RESKEY_pcp_admin_password</span><span class="k">)</span>
@@ -835,6 +830,7 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'><span class="k">        fi</span>
 </span><span class='line'><span class="k">    fi</span>
 </span><span class='line'>    <span class="c"># Service is running and there is no reason to fail</span>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;pgpool should be running...&quot;</span> &gt;&gt; /tmp/pgpool
 </span><span class='line'>    <span class="k">return</span> <span class="nv">$OCF_SUCCESS</span>
 </span><span class='line'><span class="o">}</span>
 </span><span class='line'>
@@ -846,24 +842,24 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'><span class="c">#           return $OCF_ERR_ARGS</span>
 </span><span class='line'><span class="c">#       fi</span>
 </span><span class='line'><span class="c">#    fi</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_admin_username}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$OCF_RESKEY_pcp_admin_username&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_admin_username\&quot;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">fi</span>
-</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_admin_password}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -z <span class="s2">&quot;$OCF_RESKEY_pcp_admin_password&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_admin_password\&quot;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">fi</span>
-</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_admin_host}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -z <span class="s2">&quot;$OCF_RESKEY_pcp_admin_host&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_admin_host\&quot;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">fi</span>
-</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_admin_port}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -z <span class="s2">&quot;$OCF_RESKEY_pcp_admin_port&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_admin_port\&quot;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">fi</span>
 </span><span class='line'>    <span class="c"># Did we get a path for the pgpool binary?</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pgpool_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$OCF_RESKEY_pgpool_bin&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pgpool_bin\&quot;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">else</span>
@@ -873,7 +869,7 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'>        <span class="k">fi</span>
 </span><span class='line'><span class="k">    fi</span>
 </span><span class='line'>    <span class="c"># Did we get a path for the pcp_attach_node binary?</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_attach_node_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$OCF_RESKEY_pcp_attach_node_bin&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_attach_node_bin\&quot;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">else</span>
@@ -883,7 +879,7 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'>        <span class="k">fi</span>
 </span><span class='line'><span class="k">    fi</span>
 </span><span class='line'>    <span class="c"># Did we get a path for the pcp_detach_node binary?</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_detach_node_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$OCF_RESKEY_pcp_detach_node_bin&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_detach_node_bin\&quot;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">else</span>
@@ -893,7 +889,7 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'>        <span class="k">fi</span>
 </span><span class='line'><span class="k">    fi</span>
 </span><span class='line'>    <span class="c"># Did we get a path for the pcp_node_count binary?</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_node_count_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$OCF_RESKEY_pcp_node_count_bin&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_node_count_bin\&quot;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">else</span>
@@ -903,7 +899,7 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'>        <span class="k">fi</span>
 </span><span class='line'><span class="k">    fi</span>
 </span><span class='line'>    <span class="c"># Did we get a path for the pcp_node_info binary?</span>
-</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;${OCF_RESKEY_pcp_node_info_bin}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -z <span class="s2">&quot;$OCF_RESKEY_pcp_node_info_bin&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Missing required parameter \&quot;pcp_node_info_bin\&quot;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">else</span>
@@ -912,8 +908,8 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_ERR_INSTALLED</span>
 </span><span class='line'>        <span class="k">fi</span>
 </span><span class='line'><span class="k">    fi</span>
-</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -n <span class="s2">&quot;${OCF_RESKEY_stop_mode}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
-</span><span class='line'><span class="k">        if </span><span class="nb">echo</span> <span class="s2">&quot;$OCF_RESKEY_stop_mode&quot;</span> | grep -E <span class="s1">&#39;[fsi]|fast|start|immediate&#39;</span>; <span class="k">then </span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -n <span class="s2">&quot;$OCF_RESKEY_stop_mode&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">        if</span> ! <span class="nb">echo</span> <span class="s2">&quot;$OCF_RESKEY_stop_mode&quot;</span> | grep -E <span class="s1">&#39;[fsi]|fast|start|immediate&#39;</span> &gt;&gt; /dev/null; <span class="k">then </span>
 </span><span class='line'><span class="k">            </span>ocf_log error <span class="s2">&quot;Stop mode is invalid.&quot;</span>
 </span><span class='line'>            <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>        <span class="k">fi</span>
@@ -921,20 +917,20 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Stop mode was not specified.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">fi</span>
-</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -n <span class="s2">&quot;${OCF_RESKEY_auto_reconnect}&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
-</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;${OCF_RESKEY_auto_reconnect}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
-</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;${OCF_RESKEY_auto_reconnect}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;false&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -n <span class="s2">&quot;$OCF_RESKEY_auto_reconnect&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
+</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;$OCF_RESKEY_auto_reconnect&quot;</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
+</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;$OCF_RESKEY_auto_reconnect&quot;</span> !<span class="o">=</span> <span class="s2">&quot;false&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Parameter &#39;auto_reconnect&#39; must be empty, &#39;true&#39;, or &#39;false&#39;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">fi</span>
-</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -n <span class="s2">&quot;${OCF_RESKEY_fail_on_detached}&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
-</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;${OCF_RESKEY_fail_on_detached}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
+</span><span class='line'><span class="k">    if</span> <span class="o">[</span> -n <span class="s2">&quot;$OCF_RESKEY_fail_on_detached&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
+</span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;$OCF_RESKEY_fail_on_detached&quot;</span> !<span class="o">=</span> <span class="s2">&quot;true&quot;</span> <span class="o">]</span> <span class="o">&amp;&amp;</span>
 </span><span class='line'>       <span class="o">[</span> <span class="s2">&quot;${OCF_RESKEY_fail_on_detached}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;false&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span>ocf_log error <span class="s2">&quot;Parameter &#39;fail_on_detached&#39; must be empty, &#39;true&#39;, or &#39;false&#39;.&quot;</span>
 </span><span class='line'>        <span class="k">return</span> <span class="nv">$OCF_ERR_ARGS</span>
 </span><span class='line'>    <span class="k">fi</span>
 </span><span class='line'><span class="k">    </span><span class="nb">shopt</span> -s extglob
-</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -n <span class="s2">&quot;${OCF_RESKEY_fail_on_node_detached}&quot;</span> <span class="o">]</span>; <span class="k">then</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">[</span> -n <span class="s2">&quot;$OCF_RESKEY_fail_on_node_detached&quot;</span> <span class="o">]</span>; <span class="k">then</span>
 </span><span class='line'><span class="k">        </span><span class="nv">TOKEN</span><span class="o">=</span><span class="k">${</span><span class="nv">OCF_RESKEY_fail_on_node_detached</span><span class="p">%%,*</span><span class="k">}</span>
 </span><span class='line'>        <span class="nv">TOKEN_STRING</span><span class="o">=</span><span class="k">${</span><span class="nv">OCF_RESKEY_fail_on_node_detached</span><span class="p">#*,</span><span class="k">}</span>
 </span><span class='line'>        <span class="k">while</span> <span class="o">[</span> -n <span class="nv">$TOKEN</span> <span class="o">]</span> <span class="o">&amp;&amp;</span> <span class="o">[</span> <span class="s2">&quot;${TOKEN}&quot;</span> !<span class="o">=</span> <span class="s2">&quot;${TOKEN_STRING}&quot;</span> <span class="o">]</span>; <span class="k">do</span>
@@ -974,7 +970,7 @@ Refer to <a href="http://pgpool.projects.postgresql.org/pgpool-II/doc/tutorial-e
 </span><span class='line'><span class="nv">PCP_NODE_COUNT</span><span class="o">=</span><span class="nv">$OCF_RESKEY_pcp_node_count_bin</span>
 </span><span class='line'><span class="nv">PCP_NODE_INFO</span><span class="o">=</span><span class="nv">$OCF_RESKEY_pcp_node_info_bin</span>
 </span><span class='line'><span class="nv">STOP_MODE</span><span class="o">=</span><span class="nv">$OCF_RESKEY_stop_mode</span>
-</span><span class='line'>
+</span><span class='line'><span class="nb">echo</span> <span class="s2">&quot;$(date)&quot;</span> &gt;&gt; /tmp/pgpool
 </span><span class='line'><span class="k">case</span> <span class="nv">$__OCF_ACTION</span> in
 </span><span class='line'>start<span class="o">)</span>          pgpool2_start;;
 </span><span class='line'>stop<span class="o">)</span>           pgpool2_stop;;

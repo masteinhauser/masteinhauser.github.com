@@ -198,11 +198,13 @@ pgpool2_start() {
         return $OCF_SUCCESS
     fi
     if $PGPOOL; then
+echo "Trying to start pgpool..." >> /tmp/pgpool
         sleep 2
         if pgpool2_status; then
                 ocf_log info "${OCF_RESOURCE_INSTANCE} Successfully started pgpool-II"
                 return $OCF_SUCCESS
         else
+echo "pgpool couldn't be started, why?" /tmp/pgpool
                 ocf_log error "${OCF_RESOURCE_INSTANCE} Failed to start pgpool-II"
                 return $OCF_ERR_GENERIC
         fi
@@ -213,32 +215,27 @@ pgpool2_start() {
 }
 
 pgpool2_stop() {
-    case pgpool2_status in
-        $OCF_SUCCESS)
-            ocf_log info "Using $PGPOOL -m $STOP_MODE stop to stop pgpool-II"
-            if $PGPOOL -m $STOP_MODE stop; then
-                ocf_log info "${OCF_RESOURCE_INSTANCE} Successfully stopped pgpool-II"
-                return $OCF_SUCCESS
-            else
-                ocf_log error "${OCF_RESOURCE_INSTANCE} Failed to stop pgpool-II"
-            fi
-            ;;
-        $OCF_NOT_RUNNING)
-            ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION : already stopped."
-            return $OCF_SUCCESS
-            ;;
-    esac
-    return $OCF_ERR_GENERIC
+    ocf_log info "Using $PGPOOL -m $STOP_MODE stop to stop pgpool-II"
+    if $PGPOOL -m $STOP_MODE stop; then
+        ocf_log info "${OCF_RESOURCE_INSTANCE} Successfully stopped pgpool-II"
+        return $OCF_SUCCESS
+    else
+        ocf_log info "${OCF_RESOURCE_INSTANCE} Already stopped pgpool-II"
+        return $OCF_SUCCESS
+    fi
 }
 
 pgpool2_status() {
     if [ ! -r "/var/run/pgpool/pgpool.pid" ]; then
         return $OCF_NOT_RUNNING
     fi
-    ps_info=$(ps ax | grep "[p]gpool[^:]" | grep $(cat /var/run/pgpool/pgpool.pid)) 
-    if [ -z "${ps_info}" ]; then
+    ps_info=$(ps ax | grep "pgpool" | grep $(cat /var/run/pgpool/pgpool.pid)) 
+echo "ps_info: $ps_info" >> /tmp/pgpool
+    if [ -z "$ps_info" ]; then
+echo "Found pgpool is NOT running..." >> /tmp/pgpool
         return $OCF_NOT_RUNNING
     else
+echo "Found pgpool is running..." >> /tmp/pgpool
         # Try to reconnect any detached nodes
         if is_ocf_true ${OCF_RESKEY_auto_reconnect} ; then
             NODE_COUNT=$($PCP_NODE_COUNT 1 $OCF_RESKEY_pcp_admin_host $OCF_RESKEY_pcp_admin_port $OCF_RESKEY_pcp_admin_username $OCF_RESKEY_pcp_admin_password)
@@ -290,6 +287,7 @@ pgpool2_status() {
         fi
     fi
     # Service is running and there is no reason to fail
+echo "pgpool should be running..." >> /tmp/pgpool
     return $OCF_SUCCESS
 }
 
@@ -301,24 +299,24 @@ pgpool2_validate() {
 #           return $OCF_ERR_ARGS
 #       fi
 #    fi
-    if [ -z "${OCF_RESKEY_pcp_admin_username}" ]; then
+    if [ -z "$OCF_RESKEY_pcp_admin_username" ]; then
         ocf_log error "Missing required parameter \"pcp_admin_username\"."
         return $OCF_ERR_ARGS
     fi
-    if [ -z "${OCF_RESKEY_pcp_admin_password}" ]; then
+    if [ -z "$OCF_RESKEY_pcp_admin_password" ]; then
         ocf_log error "Missing required parameter \"pcp_admin_password\"."
         return $OCF_ERR_ARGS
     fi
-    if [ -z "${OCF_RESKEY_pcp_admin_host}" ]; then
+    if [ -z "$OCF_RESKEY_pcp_admin_host" ]; then
         ocf_log error "Missing required parameter \"pcp_admin_host\"."
         return $OCF_ERR_ARGS
     fi
-    if [ -z "${OCF_RESKEY_pcp_admin_port}" ]; then
+    if [ -z "$OCF_RESKEY_pcp_admin_port" ]; then
         ocf_log error "Missing required parameter \"pcp_admin_port\"."
         return $OCF_ERR_ARGS
     fi
     # Did we get a path for the pgpool binary?
-    if [ -z "${OCF_RESKEY_pgpool_bin}" ]; then
+    if [ -z "$OCF_RESKEY_pgpool_bin" ]; then
         ocf_log error "Missing required parameter \"pgpool_bin\"."
         return $OCF_ERR_ARGS
     else
@@ -328,7 +326,7 @@ pgpool2_validate() {
         fi
     fi
     # Did we get a path for the pcp_attach_node binary?
-    if [ -z "${OCF_RESKEY_pcp_attach_node_bin}" ]; then
+    if [ -z "$OCF_RESKEY_pcp_attach_node_bin" ]; then
         ocf_log error "Missing required parameter \"pcp_attach_node_bin\"."
         return $OCF_ERR_ARGS
     else
@@ -338,7 +336,7 @@ pgpool2_validate() {
         fi
     fi
     # Did we get a path for the pcp_detach_node binary?
-    if [ -z "${OCF_RESKEY_pcp_detach_node_bin}" ]; then
+    if [ -z "$OCF_RESKEY_pcp_detach_node_bin" ]; then
         ocf_log error "Missing required parameter \"pcp_detach_node_bin\"."
         return $OCF_ERR_ARGS
     else
@@ -348,7 +346,7 @@ pgpool2_validate() {
         fi
     fi
     # Did we get a path for the pcp_node_count binary?
-    if [ -z "${OCF_RESKEY_pcp_node_count_bin}" ]; then
+    if [ -z "$OCF_RESKEY_pcp_node_count_bin" ]; then
         ocf_log error "Missing required parameter \"pcp_node_count_bin\"."
         return $OCF_ERR_ARGS
     else
@@ -358,7 +356,7 @@ pgpool2_validate() {
         fi
     fi
     # Did we get a path for the pcp_node_info binary?
-    if [ -z "${OCF_RESKEY_pcp_node_info_bin}" ]; then
+    if [ -z "$OCF_RESKEY_pcp_node_info_bin" ]; then
         ocf_log error "Missing required parameter \"pcp_node_info_bin\"."
         return $OCF_ERR_ARGS
     else
@@ -367,8 +365,8 @@ pgpool2_validate() {
             return $OCF_ERR_INSTALLED
         fi
     fi
-    if [ -n "${OCF_RESKEY_stop_mode}" ]; then
-        if echo "$OCF_RESKEY_stop_mode" | grep -E '[fsi]|fast|start|immediate'; then 
+    if [ -n "$OCF_RESKEY_stop_mode" ]; then
+        if ! echo "$OCF_RESKEY_stop_mode" | grep -E '[fsi]|fast|start|immediate' >> /dev/null; then 
             ocf_log error "Stop mode is invalid."
             return $OCF_ERR_ARGS
         fi
@@ -376,20 +374,20 @@ pgpool2_validate() {
         ocf_log error "Stop mode was not specified."
         return $OCF_ERR_ARGS
     fi
-    if [ -n "${OCF_RESKEY_auto_reconnect}" ] &&
-       [ "${OCF_RESKEY_auto_reconnect}" != "true" ] &&
-       [ "${OCF_RESKEY_auto_reconnect}" != "false" ]; then
+    if [ -n "$OCF_RESKEY_auto_reconnect" ] &&
+       [ "$OCF_RESKEY_auto_reconnect" != "true" ] &&
+       [ "$OCF_RESKEY_auto_reconnect" != "false" ]; then
         ocf_log error "Parameter 'auto_reconnect' must be empty, 'true', or 'false'."
         return $OCF_ERR_ARGS
     fi
-    if [ -n "${OCF_RESKEY_fail_on_detached}" ] &&
-       [ "${OCF_RESKEY_fail_on_detached}" != "true" ] &&
+    if [ -n "$OCF_RESKEY_fail_on_detached" ] &&
+       [ "$OCF_RESKEY_fail_on_detached" != "true" ] &&
        [ "${OCF_RESKEY_fail_on_detached}" != "false" ]; then
         ocf_log error "Parameter 'fail_on_detached' must be empty, 'true', or 'false'."
         return $OCF_ERR_ARGS
     fi
     shopt -s extglob
-    if [ -n "${OCF_RESKEY_fail_on_node_detached}" ]; then
+    if [ -n "$OCF_RESKEY_fail_on_node_detached" ]; then
         TOKEN=${OCF_RESKEY_fail_on_node_detached%%,*}
         TOKEN_STRING=${OCF_RESKEY_fail_on_node_detached#*,}
         while [ -n $TOKEN ] && [ "${TOKEN}" != "${TOKEN_STRING}" ]; do
@@ -429,7 +427,7 @@ PCP_DETACH_NODE=$OCF_RESKEY_pcp_detach_node_bin
 PCP_NODE_COUNT=$OCF_RESKEY_pcp_node_count_bin
 PCP_NODE_INFO=$OCF_RESKEY_pcp_node_info_bin
 STOP_MODE=$OCF_RESKEY_stop_mode
-
+echo "$(date)" >> /tmp/pgpool
 case $__OCF_ACTION in
 start)          pgpool2_start;;
 stop)           pgpool2_stop;;
@@ -442,3 +440,4 @@ esac
 rc=$?
 ocf_log debug "${OCF_RESOURCE_INSTANCE} $__OCF_ACTION returned $rc"
 exit $rc
+

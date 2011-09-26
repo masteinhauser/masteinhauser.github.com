@@ -132,7 +132,7 @@ If  a message &#8220;Invalid digest&#8221; appears from the corosync executive, 
 </span><span class='line'>
 </span><span class='line'><span class="c"># Define receiving server and copy to it.</span>
 </span><span class='line'><span class="nv">node</span><span class="o">=</span>172.25.3.26
-</span><span class='line'>cat /etc/corosync/authkey | ssh root@<span class="nv">$node</span> <span class="s2">&quot;cat &gt;&gt; /etc/corosync/authkey; chmod 0400 /etc/corosync/authkey; chown hacluster:hacluster /etc/corosync/authkey&quot;</span>
+</span><span class='line'>cat /etc/corosync/authkey | ssh root@<span class="nv">$node</span> <span class="s2">&quot;cat &gt;&gt; /etc/corosync/authkey; chmod 0400 /etc/corosync/authkey; chown hacluster:haclient /etc/corosync/authkey&quot;</span>
 </span></code></pre></td></tr></table></div></figure>
 
 

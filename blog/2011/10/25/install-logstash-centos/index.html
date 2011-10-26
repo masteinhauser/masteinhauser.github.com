@@ -1,0 +1,515 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Installing logstash on CentOS 5.7 - Bits & Bytes of Life</title>
+  <meta name="author" content="Myles A. K. Steinhauser">
+
+  
+  <meta name="description" content="What is and Why use Logstash?At my place of employment we have recently set up Zabbix for our infrastructure monitoring. To complement that system &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://masteinhauser.github.com/blog/2011/10/25/install-logstash-centos/">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="http://s3.amazonaws.com/ender-js/jeesh.min.js"></script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <link href="" rel="alternate" title="Bits & Bytes of Life" type="application/atom+xml">
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+</head>
+
+<body  >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Bits & Bytes of Life</a></h1>
+  
+    <h2>A blog of my thoughts and actions.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:masteinhauser.github.com" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Installing Logstash on CentOS 5.7</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-10-25T20:00:00-05:00" pubdate  data-updated="true" >Oct 25<span>th</span>, 2011</time>
+        
+         | <a href="#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><h2>What is and Why use Logstash?</h2>
+
+<p>At my place of employment we have recently set up <a href="http://wwww.zabbix.com">Zabbix</a> for our infrastructure monitoring. To complement that system and allow easier and faster diagnosis of problems detected we have looked into building a centralized logging system for our servers and applications. This has been an ongoing search but we never found something that truly fit our needs. Recently, I came across <a href="http://www.logstash.net">Logstash</a> which uses a program written in JRuby which operates like many Unix style programs. It is described to be similar to <code>sed</code>. Logstash is designed to chain a number of filters together to process an input source and output to many different places. One of them is to Elasticsearch which allows for easy searching, pattern matching and even correlation without needing to dump the entire system in a backend SQL database which is often slow and cumbersome to use on unstructured data like log files are.</p>
+
+<p>This post will be a set of steps to install and configure a <a href="http://logstash.net/docs/1.0.17/getting-started-centralized">Centralized</a> install of Logstash. It will be tested with Apache access logs.</p>
+
+<!-- more -->
+
+
+<h2>Install Dependencies</h2>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># Install EPEL repo</span>
+</span><span class='line'>sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/<span class="k">$(</span>uname -i<span class="k">)</span>/epel-release-5-4.noarch.rpm
+</span><span class='line'>
+</span><span class='line'><span class="c"># Dependencies</span>
+</span><span class='line'>yum install -y gcc gperf make libevent-devel pcre-devel tokyocabinet-devel
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Download and Install Java JDK</h3>
+
+<p>These instructions were used from <a href="http://www.banym.de/linux/centos/install-sunoracle-jdk-on-centos">BANYM&#8217;S BLOG</a>
+Use your favorite browser to download the JDK in .rpm.bin format from Oracle:
+<a href="http://www.oracle.com/technetwork/java/javase/downloads/index.html">http://www.oracle.com/technetwork/java/javase/downloads/index.html</a></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># Install Java</span>
+</span><span class='line'>sh jdk*rpm.bin* -noregister
+</span><span class='line'>
+</span><span class='line'><span class="c"># Link the JDK into your environment:</span>
+</span><span class='line'>alternatives --install /usr/bin/java java /usr/java/default/bin/java 1
+</span><span class='line'>alternatives --config java
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Use the Sources!</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="c"># Download Elastic Search</span>
+</span><span class='line'><span class="nv">ES_PACKAGE</span><span class="o">=</span>elasticsearch-0.17.9.zip <span class="c"># Latest release as of publishing.</span>
+</span><span class='line'><span class="nv">ES_DIR</span><span class="o">=</span><span class="k">${</span><span class="nv">ES_PACKAGE</span><span class="p">%%.zip</span><span class="k">}</span>
+</span><span class='line'><span class="nv">SITE</span><span class="o">=</span>http://github.com/downloads/elasticsearch/elasticsearch
+</span><span class='line'><span class="k">if</span> <span class="o">[</span> ! -d <span class="s2">&quot;$ES_DIR&quot;</span> <span class="o">]</span> ; <span class="k">then</span>
+</span><span class='line'><span class="k">  </span>wget --no-check-certificate <span class="nv">$SITE</span>/<span class="nv">$ES_PACKAGE</span>
+</span><span class='line'>  unzip <span class="nv">$ES_PACKAGE</span>
+</span><span class='line'><span class="k">fi</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Install as system service</span>
+</span><span class='line'>bin/elasticsearch install
+</span><span class='line'>
+</span><span class='line'><span class="c"># Run Elastic Search</span>
+</span><span class='line'>bin/elasticsearch -f -Xmx3g -Xms3g
+</span><span class='line'>
+</span><span class='line'><span class="c"># Download grok</span>
+</span><span class='line'>wget --no-check-certificate https://github.com/jordansissel/grok/tarball/master -O grok.tar.gz
+</span><span class='line'>tar zxf grok.tar.gz
+</span><span class='line'>
+</span><span class='line'><span class="c"># Install grok</span>
+</span><span class='line'><span class="nb">cd</span> *grok*
+</span><span class='line'>make grok
+</span><span class='line'>make install
+</span><span class='line'>ldconfig <span class="c"># Load the new libraries into the library path.</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># If this is a 64-bit machine, create a symbolic link from /usr/lib64/ to the installed grok in /usr/lib/</span>
+</span><span class='line'>
+</span><span class='line'><span class="c"># Download logstash</span>
+</span><span class='line'><span class="nv">src</span><span class="o">=</span>/usr/src/
+</span><span class='line'>mkdir -p <span class="nv">$src</span>/logstash
+</span><span class='line'><span class="nb">cd</span> <span class="nv">$src</span>/logstash
+</span><span class='line'>wget http://semicomplete.com/files/logstash/logstash-1.0.17-monolithic.jar
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Configure Logstash</h3>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>cat <span class="s">&lt;&lt; EOF &gt; logstash.conf</span>
+</span><span class='line'><span class="s">input {</span>
+</span><span class='line'><span class="s">  stdin {</span>
+</span><span class='line'><span class="s">    format =&gt; &quot;plain&quot;</span>
+</span><span class='line'><span class="s">    message_format =&gt; &quot;plain&quot;</span>
+</span><span class='line'><span class="s">    type =&gt; &quot;apache-access&quot;</span>
+</span><span class='line'><span class="s">  }</span>
+</span><span class='line'><span class="s">  tcp {</span>
+</span><span class='line'><span class="s">    type =&gt; &quot;apache-access&quot;</span>
+</span><span class='line'><span class="s">    port =&gt; 3333</span>
+</span><span class='line'><span class="s">  }</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">filter {</span>
+</span><span class='line'><span class="s">  grok {</span>
+</span><span class='line'><span class="s">    type =&gt; &quot;syslog&quot; # for logs of type &quot;syslog&quot;</span>
+</span><span class='line'><span class="s">    pattern =&gt; &quot;%{SYSLOGLINE}&quot;</span>
+</span><span class='line'><span class="s">    # You can specify multiple &#39;pattern&#39; lines</span>
+</span><span class='line'><span class="s">  }</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">  grok {</span>
+</span><span class='line'><span class="s">    type =&gt; &quot;apache-access&quot; # for logs of type &#39;apache-access&#39;</span>
+</span><span class='line'><span class="s">    pattern =&gt; &quot;%{COMBINEDAPACHELOG}&quot;</span>
+</span><span class='line'><span class="s">  }</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">  date {</span>
+</span><span class='line'><span class="s">    type =&gt; &quot;syslog&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">    # The &#39;timestamp&#39; and &#39;timestamp8601&#39; names are for fields in the</span>
+</span><span class='line'><span class="s">    # logstash event.  The &#39;SYSLOGLINE&#39; grok pattern above includes a field</span>
+</span><span class='line'><span class="s">    # named &#39;timestamp&#39; that is set to the normal syslog timestamp if it</span>
+</span><span class='line'><span class="s">    # exists in the event.</span>
+</span><span class='line'><span class="s">    timestamp =&gt; &quot;MMM  d HH:mm:ss&quot;   # syslog &#39;day&#39; value can be space-leading</span>
+</span><span class='line'><span class="s">    timestamp =&gt; &quot;MMM dd HH:mm:ss&quot;</span>
+</span><span class='line'><span class="s">    timestamp8601 =&gt; ISO8601 # Some syslogs use ISO8601 time format</span>
+</span><span class='line'><span class="s">  }</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">  date {</span>
+</span><span class='line'><span class="s">    type =&gt; &quot;apache-access&quot;</span>
+</span><span class='line'><span class="s">    timestamp =&gt; &quot;dd/MMM/yyyy:HH:mm:ss Z&quot;</span>
+</span><span class='line'><span class="s">  }</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="s">output {</span>
+</span><span class='line'><span class="s">  stdout { }</span>
+</span><span class='line'><span class="s">  # If you can&#39;t discover using multicast, set the address explicitly</span>
+</span><span class='line'><span class="s">  elasticsearch {</span>
+</span><span class='line'><span class="s">    host =&gt; &quot;localhost&quot;</span>
+</span><span class='line'><span class="s">  }</span>
+</span><span class='line'><span class="s">}</span>
+</span><span class='line'><span class="s">EOF</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Run logstash</h3>
+
+<p><code>java -jar logstash-*-monolithic.jar agent -f logstash.conf -- web --backend elasticsearch://localhost/</code></p>
+
+<h3>Parse logs</h3>
+
+<p><code>time tail -n100000 /tmp/wwt-virt-extra-web15_access.log | nc 192.168.1.119 3333</code></p>
+
+<h3>View logs and Search results</h3>
+
+<p>Open browser to http://192.168.1.119:9292/</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Myles A. K. Steinhauser</span></span>
+
+      
+
+
+
+
+
+  
+
+
+
+<time datetime="2011-10-25T20:00:00-05:00" pubdate  data-updated="true" >Oct 25<span>th</span>, 2011</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/centos/'>centos</a>, <a class='category' href='/blog/categories/logstash/'>logstash</a>, <a class='category' href='/blog/categories/servers/'>servers</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://masteinhauser.github.com/blog/2011/10/25/install-logstash-centos/" data-via="masteinhauser" data-counturl="http://masteinhauser.github.com/blog/2011/10/25/install-logstash-centos/" >Tweet</a>
+  
+  
+  <div class="g-plusone" data-size="medium"></div>
+  
+</div>
+
+    
+  </footer>
+</article>
+
+  <section>
+    <h1>Comments</h1>
+    <div id="disqus_thread" aria-live="polite"><noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+  </section>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2011/10/25/install-logstash-centos/">Installing logstash on CentOS 5.7</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/09/24/pacemaker-pgpool2/">Install Pacemaker + pgPool-II 3.1</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/09/24/corosync-pacemaker-apache2/">Install CoroSync + Pacemaker on CentOS 5.6</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2011/09/22/hello-world/">Hello World</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>Github Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/masteinhauser">@masteinhauser</a> on Github
+  
+  <script type="text/javascript">
+    $.domReady(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'masteinhauser',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>Latest Tweets</h1>
+  <ul id="tweets">
+    <li class="loading">Status updating...</li>
+  </ul>
+  <script type="text/javascript">
+    $.domReady(function(){
+      getTwitterFeed("masteinhauser", 4, false);
+    });
+  </script>
+  <script src="/javascripts/twitter.js" type="text/javascript"> </script>
+  
+    <a href="http://twitter.com/masteinhauser" class="twitter-follow-button" data-width="208px" data-show-count="false">Follow @masteinhauser</a>
+  
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2011 - Myles A. K. Steinhauser -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+<script type="text/javascript">
+    (function () {
+      var disqus_shortname = 'masteinhauserblog';
+      
+        
+        // var disqus_developer = 1;
+        var disqus_identifier = 'http://masteinhauser.github.com/blog/2011/10/25/install-logstash-centos/';
+        var disqus_url = 'http://masteinhauser.github.com/blog/2011/10/25/install-logstash-centos/';
+        var disqus_script = 'embed.js'
+      
+
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = 'http://' + disqus_shortname + '.disqus.com/' + disqus_script;
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    }());
+</script>
+
+
+  
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-25897542-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+    (function() {
+      var script = document.createElement('script'); script.type = 'text/javascript'; script.async = true;
+      script.src = 'https://apis.google.com/js/plusone.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s);
+    })();
+  </script>
+
+
+  
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+</body>
+</html>

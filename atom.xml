@@ -4,13 +4,253 @@
   <title>Bits & Bytes of Life</title>
   <link href="http://masteinhauser.github.com/atom.xml" rel="self"/>
   <link href="http://masteinhauser.github.com/"/>
-  <updated>2011-09-25T20:21:56-05:00</updated>
+  <updated>2011-10-26T01:24:56-05:00</updated>
   <id>http://masteinhauser.github.com/</id>
   <author>
     <name>Myles A. K. Steinhauser</name>
     
   </author>
 
+  
+  <entry>
+    <title>Installing logstash on CentOS 5.7</title>
+    <link href="http://masteinhauser.github.com/blog/2011/10/25/install-logstash-centos/"/>
+    <updated>2011-10-25T20:00:00-05:00</updated>
+    <id>http://masteinhauser.github.com/blog/2011/10/25/install-logstash-centos</id>
+    <content type="html">&lt;h2&gt;What is and Why use Logstash?&lt;/h2&gt;
+
+&lt;p&gt;At my place of employment we have recently set up &lt;a href=&quot;http://wwww.zabbix.com&quot;&gt;Zabbix&lt;/a&gt; for our infrastructure monitoring. To complement that system and allow easier and faster diagnosis of problems detected we have looked into building a centralized logging system for our servers and applications. This has been an ongoing search but we never found something that truly fit our needs. Recently, I came across &lt;a href=&quot;http://www.logstash.net&quot;&gt;Logstash&lt;/a&gt; which uses a program written in JRuby which operates like many Unix style programs. It is described to be similar to &lt;code&gt;sed&lt;/code&gt;. Logstash is designed to chain a number of filters together to process an input source and output to many different places. One of them is to Elasticsearch which allows for easy searching, pattern matching and even correlation without needing to dump the entire system in a backend SQL database which is often slow and cumbersome to use on unstructured data like log files are.&lt;/p&gt;
+
+&lt;p&gt;This post will be a set of steps to install and configure a &lt;a href=&quot;http://logstash.net/docs/1.0.17/getting-started-centralized&quot;&gt;Centralized&lt;/a&gt; install of Logstash. It will be tested with Apache access logs.&lt;/p&gt;
+
+&lt;!&#8211; more &#8211;&gt;
+
+
+&lt;h2&gt;Install Dependencies&lt;/h2&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Install EPEL repo&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;sudo rpm -Uvh http://download.fedora.redhat.com/pub/epel/5/&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;uname -i&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;/epel-release-5-4.noarch.rpm
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Dependencies&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;yum install -y gcc gperf make libevent-devel pcre-devel tokyocabinet-devel
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h3&gt;Download and Install Java JDK&lt;/h3&gt;
+
+&lt;p&gt;These instructions were used from &lt;a href=&quot;http://www.banym.de/linux/centos/install-sunoracle-jdk-on-centos&quot;&gt;BANYM&amp;#8217;S BLOG&lt;/a&gt;
+Use your favorite browser to download the JDK in .rpm.bin format from Oracle:
+&lt;a href=&quot;http://www.oracle.com/technetwork/java/javase/downloads/index.html&quot;&gt;http://www.oracle.com/technetwork/java/javase/downloads/index.html&lt;/a&gt;&lt;/p&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Install Java&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;sh jdk*rpm.bin* -noregister
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Link the JDK into your environment:&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;alternatives &#8211;install /usr/bin/java java /usr/java/default/bin/java 1
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;alternatives &#8211;config java
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h3&gt;Use the Sources!&lt;/h3&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;15&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;16&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;17&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;18&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;19&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;20&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;21&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;22&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;23&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;24&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;25&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;26&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;27&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;28&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;29&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;30&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;31&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;32&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Download Elastic Search&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;ES_PACKAGE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;elasticsearch-0.17.9.zip &lt;span class=&quot;c&quot;&gt;# Latest release as of publishing.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;ES_DIR&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;ES_PACKAGE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;%%.zip&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;SITE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;http://github.com/downloads/elasticsearch/elasticsearch
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; ! -d &lt;span class=&quot;s2&quot;&gt;&amp;quot;$ES_DIR&amp;quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt; ; &lt;span class=&quot;k&quot;&gt;then&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;  &lt;/span&gt;wget &#8211;no-check-certificate &lt;span class=&quot;nv&quot;&gt;$SITE&lt;/span&gt;/&lt;span class=&quot;nv&quot;&gt;$ES_PACKAGE&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;  unzip &lt;span class=&quot;nv&quot;&gt;$ES_PACKAGE&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;k&quot;&gt;fi&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Install as system service&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;bin/elasticsearch install
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Run Elastic Search&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;bin/elasticsearch -f -Xmx3g -Xms3g
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Download grok&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;wget &#8211;no-check-certificate https://github.com/jordansissel/grok/tarball/master -O grok.tar.gz
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;tar zxf grok.tar.gz
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Install grok&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; *grok*
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;make grok
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;make install
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;ldconfig &lt;span class=&quot;c&quot;&gt;# Load the new libraries into the library path.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# If this is a 64-bit machine, create a symbolic link from /usr/lib64/ to the installed grok in /usr/lib/&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;c&quot;&gt;# Download logstash&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nv&quot;&gt;src&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/usr/src/
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;mkdir -p &lt;span class=&quot;nv&quot;&gt;$src&lt;/span&gt;/logstash
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$src&lt;/span&gt;/logstash
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;wget http://semicomplete.com/files/logstash/logstash-1.0.17-monolithic.jar
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h3&gt;Configure Logstash&lt;/h3&gt;
+
+&lt;figure class=&#8217;code&#8217;&gt;&lt;figcaption&gt;&lt;span&gt;&lt;/span&gt;&lt;/figcaption&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;table&gt;&lt;tr&gt;&lt;td class=&quot;gutter&quot;&gt;&lt;pre class=&quot;line-numbers&quot;&gt;&lt;span class=&#8217;line-number&#8217;&gt;1&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;2&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;3&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;4&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;5&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;6&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;7&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;8&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;9&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;10&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;11&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;12&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;13&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;14&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;15&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;16&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;17&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;18&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;19&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;20&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;21&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;22&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;23&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;24&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;25&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;26&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;27&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;28&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;29&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;30&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;31&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;32&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;33&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;34&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;35&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;36&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;37&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;38&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;39&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;40&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;41&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;42&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;43&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;44&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;45&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;46&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;47&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;48&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;49&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;50&lt;/span&gt;
+&lt;span class=&#8217;line-number&#8217;&gt;51&lt;/span&gt;
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&#8217;code&#8217;&gt;&lt;pre&gt;&lt;code class=&#8217;bash&#8217;&gt;&lt;span class=&#8217;line&#8217;&gt;cat &lt;span class=&quot;s&quot;&gt;&amp;lt;&amp;lt; EOF &amp;gt; logstash.conf&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;input {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  stdin {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    format =&amp;gt; &amp;quot;plain&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    message_format =&amp;gt; &amp;quot;plain&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    type =&amp;gt; &amp;quot;apache-access&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  }&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  tcp {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    type =&amp;gt; &amp;quot;apache-access&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    port =&amp;gt; 3333&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  }&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;filter {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  grok {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    type =&amp;gt; &amp;quot;syslog&amp;quot; # for logs of type &amp;quot;syslog&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    pattern =&amp;gt; &amp;quot;%{SYSLOGLINE}&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    # You can specify multiple &amp;#39;pattern&amp;#39; lines&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  }&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  grok {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    type =&amp;gt; &amp;quot;apache-access&amp;quot; # for logs of type &amp;#39;apache-access&amp;#39;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    pattern =&amp;gt; &amp;quot;%{COMBINEDAPACHELOG}&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  }&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  date {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    type =&amp;gt; &amp;quot;syslog&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    # The &amp;#39;timestamp&amp;#39; and &amp;#39;timestamp8601&amp;#39; names are for fields in the&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    # logstash event.  The &amp;#39;SYSLOGLINE&amp;#39; grok pattern above includes a field&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    # named &amp;#39;timestamp&amp;#39; that is set to the normal syslog timestamp if it&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    # exists in the event.&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    timestamp =&amp;gt; &amp;quot;MMM  d HH:mm:ss&amp;quot;   # syslog &amp;#39;day&amp;#39; value can be space-leading&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    timestamp =&amp;gt; &amp;quot;MMM dd HH:mm:ss&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    timestamp8601 =&amp;gt; ISO8601 # Some syslogs use ISO8601 time format&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  }&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  date {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    type =&amp;gt; &amp;quot;apache-access&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    timestamp =&amp;gt; &amp;quot;dd/MMM/yyyy:HH:mm:ss Z&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  }&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;output {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  stdout { }&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  # If you can&amp;#39;t discover using multicast, set the address explicitly&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  elasticsearch {&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;    host =&amp;gt; &amp;quot;localhost&amp;quot;&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;  }&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;span class=&#8217;line&#8217;&gt;&lt;span class=&quot;s&quot;&gt;EOF&lt;/span&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/div&gt;&lt;/figure&gt;
+
+
+&lt;h3&gt;Run logstash&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;java -jar logstash-*-monolithic.jar agent -f logstash.conf &#8211; web &#8211;backend elasticsearch://localhost/&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3&gt;Parse logs&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;time tail -n100000 /tmp/wwt-virt-extra-web15_access.log | nc 192.168.1.119 3333&lt;/code&gt;&lt;/p&gt;
+
+&lt;h3&gt;View logs and Search results&lt;/h3&gt;
+
+&lt;p&gt;Open browser to http://192.168.1.119:9292/&lt;/p&gt;
+</content>
+  </entry>
   
   <entry>
     <title>Install Pacemaker + pgPool-II 3.1</title>
